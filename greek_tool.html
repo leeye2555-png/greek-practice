@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=GFS+Didot&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>그리스어 어휘 학습 도구</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #F5F0E8; color: #1a1a1a; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ── Header ── */
+.header { background: #fff; border-bottom: 0.5px solid #E8DFC8; padding: 0.75rem 1.25rem; flex-shrink: 0; display: flex; align-items: center; gap: 1rem; }
+.header h1 { font-size: 16px; font-weight: 500; color: #333; }
+.header .sub { font-size: 11px; color: #aaa; margin-top: 1px; }
+
+/* ── Search bar ── */
+.searchbar { background: #fff; border-bottom: 0.5px solid #E8DFC8; padding: 0.6rem 1.25rem; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex-shrink: 0; }
+.searchbar input { flex: 1; min-width: 180px; font-size: 15px; border: 0.5px solid #ddd; border-radius: 8px; padding: 7px 12px; outline: none; }
+.searchbar input:focus { border-color: #C9922A; }
+.searchbar input::placeholder { color: #bbb; font-size: 13px; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.fb { border: 0.5px solid #ddd; background: #fff; border-radius: 20px; padding: 4px 12px; font-size: 11px; cursor: pointer; color: #555; white-space: nowrap; }
+.fb:hover { background: #f0f0ee; }
+.fb.active { background: #C9922A; border-color: #C9922A; color: #fff; }
+.fb.nt.active  { background: #4A6FA5; border-color: #4A6FA5; }
+.fb.lxx.active { background: #6B5FAA; border-color: #6B5FAA; }
+.fb.homer.active { background: #A0522D; border-color: #A0522D; }
+.fb.liturgy.active { background: #C9922A; border-color: #C9922A; }
+
+/* ── Main area ── */
+.main { flex: 1; display: flex; overflow: hidden; }
+
+/* ── LEFT: word panel ── */
+.word-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; border-right: 0.5px solid #E8DFC8; }
+.word-list-header { padding: 0.5rem 1.25rem; font-size: 11px; color: #aaa; background: #F5F0E8; border-bottom: 0.5px solid #eee; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; }
+.mode-btn { border: 0.5px solid #ddd; background: #fff; border-radius: 6px; padding: 4px 10px; font-size: 11px; cursor: pointer; color: #555; }
+.mode-btn:hover { background: #f0f0ee; }
+.mode-btn.active-mode { background: #C9922A; color: #fff; border-color: #C9922A; }
+
+/* ── STUDY mode ── */
+./* study-view handled by slider */
+
+
+.word-nav { display: flex; gap: 8px; align-items: center; }
+.nav-btn { border: 0.5px solid #ddd; background: #fff; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #555; }
+.nav-btn:hover { background: #f0f0ee; }
+.nav-counter { font-size: 12px; color: #aaa; flex: 1; text-align: center; }
+
+.big-word { background: #fff; border: 0.5px solid #E8DFC8; border-left: 3px solid #C9922A; border-radius: 12px; padding: 1.5rem 1.5rem; }
+.big-greek { font-size: 44px; font-weight: 400; color: #1a1a1a; line-height: 1.1; margin-bottom: 0.4rem; font-family: "GFS Didot", Georgia, serif; }
+.big-pron { font-size: 16px; color: #555; margin-bottom: 4px; }
+.big-pron .en { color: #bbb; font-style: italic; font-size: 12px; margin-left: 6px; margin-left: 6px; }
+.big-meaning { font-size: 22px; font-weight: 500; color: #333; margin-top: 0.6rem; }
+.big-pos { font-size: 12px; color: #bbb; margin-top: 4px; }
+.big-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 0.75rem; }
+.tag { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+.tag.nt  { background:#EAF0FA; color:#2E4F8A; }
+.tag.lxx { background:#F0EEF8; color:#4A3D8A; }
+.tag.homer { background:#FAECE7; color:#8B3A1A; }
+.tag.liturgy { background:#FDF3DC; color:#8B6914; }
+.big-note { font-size: 12px; color: #888; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 0.5px solid #f0f0f0; }
+
+.letter-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+.lbox { border: 0.5px solid #ddd; border-radius: 8px; padding: 10px 12px; text-align: center; min-width: 52px; cursor: pointer; transition: all 0.1s; background: #fafaf8; }
+.lbox:hover { background: #f0f0f0; }
+.lbox.lactive { border-color: #C9922A; background: #FDF3DC; }
+.lchar { font-size: 24px; font-weight: 400; display: block; font-family: "GFS Didot", Georgia, serif; }
+.lsound { font-size: 12px; color: #aaa; display: block; margin-top: 3px; }
+
+/* ── LIST mode ── */
+/* list-view handled by slider */
+
+.lcard { background: #fff; border: 0.5px solid #e0e0e0; border-radius: 10px; padding: 0.75rem 0.9rem; cursor: pointer; transition: all 0.1s; }
+.lcard:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); transform: translateY(-1px); }
+.lcard.selected { border-color: #C9922A; background: #f0faf6; }
+.lcard-greek { font-size: 18px; font-weight: 400; color: #1a1a1a; font-family: "GFS Didot", Georgia, serif; }
+.lcard-pron { font-size: 13px; color: #555; margin-top: 2px; }
+.lcard-pron .en { color: #bbb; font-style: italic; font-size: 11px; margin-left: 4px; }
+.lcard-meaning { font-size: 13px; color: #333; margin-top: 4px; font-weight: 500; }
+.lcard-tags { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 6px; }
+.empty { padding: 3rem 1rem; text-align: center; color: #bbb; font-size: 14px; }
+
+/* ── RIGHT: alphabet panel ── */
+.alpha-panel { width: 55%; flex-shrink: 0; background: #FFFDF7; border-left: 0.5px solid #E8DFC8; display: flex; flex-direction: column; overflow: hidden; }
+.alpha-header { padding: 0.85rem 1.25rem; font-size: 13px; color: #aaa; border-bottom: 0.5px solid #E8DFC8; flex-shrink: 0; font-weight: 500; }
+
+
+
+.alpha-active-info .sound { color: #C9922A; font-weight: 500; }
+.alpha-grid { padding: 1rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; overflow-y: auto; flex: 1; align-content: start; }
+.apc { border: 0.5px solid #e8e8e8; border-radius: 10px; padding: 18px 6px; text-align: center; }
+.apc.known   { border-color: #C9922A; background: #FDF3DC; }
+.apc.similar { border-color: #4A6FA5; background: #EAF0FA; }
+.apc.lit     { border-color: #C9922A !important; background: #FDF3DC !important; box-shadow: 0 0 0 2px rgba(201,146,42,0.2); }
+.apc .ag { font-size: 26px; font-weight: 400; display: block; color: #1a1a1a; line-height: 1.1; font-family: "GFS Didot", Georgia, serif; }
+.apc .an { font-size: 12px; color: #888; display: block; margin-top: 5px; }
+.apc .as { font-size: 14px; font-weight: 500; color: #555; display: block; margin-top: 3px; }
+
+.legend { padding: 0.5rem 0.9rem; border-top: 0.5px solid #eee; flex-shrink: 0; }
+.leg { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #888; margin-bottom: 3px; }
+.ldot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+@media (max-width: 700px) {
+  .alpha-panel { width: 48%; }
+  .alpha-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.active-box-left {
+  padding: 0;
+  background: #fff;
+  border: 0.5px solid #E8DFC8;
+  border-left: 3px solid #C9922A;
+  border-radius: 12px;
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
+  flex-shrink: 0;
+}
+.active-box-left.revealed {
+  max-height: 160px;
+  opacity: 1;
+  padding: 1.25rem 1.5rem;
+}
+
+.active-box-left .alpha-active-greek { font-size: 48px; font-weight: 400; color: #1a1a1a; font-family: "GFS Didot", Georgia, serif; }
+.active-box-left 
+.active-box-left .alpha-active-info .sound { color: #C9922A; font-weight: 500; }
+
+.view-slider {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.study-view {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transform: translateX(0%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #F5F0E8;
+}
+.list-view {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 0.75rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+  align-content: start;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #F5F0E8;
+}
+.view-slider.show-list .study-view {
+  transform: translateX(-100%);
+}
+.view-slider.show-list .list-view {
+  transform: translateX(0%);
+}
+
+/* ── TRAINING MODE ── */
+.train-view {
+  position: absolute; inset: 0; overflow-y: auto;
+  padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.75rem;
+  transform: translateX(200%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #F5F0E8;
+}
+.view-slider.show-train .study-view { transform: translateX(-100%); }
+.view-slider.show-train .list-view  { transform: translateX(-100%); }
+.view-slider.show-train .train-view { transform: translateX(0%); }
+.view-slider.show-list  .train-view { transform: translateX(100%); }
+
+.train-tabs { display: flex; gap: 6px; }
+.train-tab { border: 0.5px solid #E8DFC8; background: #fff; border-radius: 20px; padding: 5px 16px; font-size: 12px; cursor: pointer; color: #888; }
+.train-tab:hover { background: #FDF3DC; }
+.train-tab.active { background: #C9922A; border-color: #C9922A; color: #fff; }
+
+.train-card {
+  background: #fff; border: 0.5px solid #E8DFC8; border-left: 3px solid #C9922A;
+  border-radius: 12px; padding: 1.5rem; display: flex; flex-direction: column;
+  align-items: center; gap: 0.5rem; flex: 1; justify-content: center; min-height: 200px;
+}
+.train-prompt { font-size: 80px; font-family: "GFS Didot", Georgia, serif; color: #1a1a1a; line-height: 1; text-align: center; }
+.train-subprompt { font-size: 14px; color: #aaa; margin-top: 0.25rem; }
+.train-input-row { display: flex; gap: 8px; }
+.train-input { font-size: 18px; border: 0.5px solid #E8DFC8; border-radius: 8px; padding: 10px 16px; outline: none; flex: 1; text-align: center; background: #fff; }
+.train-input:focus { border-color: #C9922A; }
+.train-submit { background: #C9922A; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 14px; cursor: pointer; }
+.train-submit:hover { background: #8B6914; }
+.train-feedback { text-align: center; font-size: 15px; min-height: 24px; font-weight: 500; }
+.train-feedback.correct { color: #C9922A; }
+.train-feedback.wrong { color: #A0522D; }
+.train-hint { font-size: 13px; color: #888; text-align: center; }
+
+.word-trainer-word { font-size: 36px; font-family: "GFS Didot", Georgia, serif; color: #1a1a1a; text-align: center; margin-bottom: 0.5rem; }
+.letter-progress { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0; }
+.lp-box { border: 0.5px solid #E8DFC8; border-radius: 6px; padding: 6px 8px; min-width: 36px; text-align: center; background: #fafaf8; transition: all 0.15s; }
+.lp-box.done { background: #FDF3DC; border-color: #C9922A; }
+.lp-box.current { background: #fff; border-color: #C9922A; border-width: 2px; }
+.lp-box.wrong-flash { background: #FAECE7; border-color: #A0522D; }
+.lp-char { font-size: 18px; font-family: "GFS Didot", Georgia, serif; display: block; }
+.lp-sound { font-size: 10px; color: #aaa; display: block; }
+.lp-sound.revealed { color: #C9922A; font-weight: 500; }
+
+/* Stats panel */
+.stats-panel { background: #fff; border: 0.5px solid #E8DFC8; border-radius: 12px; padding: 1rem 1.25rem; }
+.stats-panel h3 { font-size: 13px; color: #aaa; margin-bottom: 0.75rem; font-weight: 500; }
+.stats-section { margin-bottom: 1rem; }
+.stats-section-title { font-size: 11px; color: #C9922A; font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 0.75rem; }
+.stat-box { background: #F5F0E8; border-radius: 8px; padding: 0.6rem; text-align: center; }
+.stat-num { font-size: 20px; font-weight: 600; color: #C9922A; display: block; }
+.stat-lbl { font-size: 10px; color: #888; display: block; margin-top: 2px; }
+.weak-list { display: flex; gap: 6px; flex-wrap: wrap; }
+.weak-item { background: #FAECE7; border: 0.5px solid #A0522D; border-radius: 6px; padding: 4px 10px; font-size: 13px; font-family: "GFS Didot", Georgia, serif; color: #8B3A1A; display: flex; align-items: center; gap: 4px; }
+.weak-item .wi-sub { font-size: 10px; color: #A0522D; font-family: system-ui, sans-serif; }
+.alpha-stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.asg-item { border: 0.5px solid #E8DFC8; border-radius: 6px; padding: 5px 3px; text-align: center; background: #fafaf8; }
+.asg-item.asg-good { border-color: #C9922A; background: #FDF3DC; }
+.asg-item.asg-bad  { border-color: #A0522D; background: #FAECE7; }
+.asg-item.asg-none { opacity: 0.4; }
+.asg-char { font-size: 14px; font-family: "GFS Didot", Georgia, serif; display: block; color: #1a1a1a; }
+.asg-rate { font-size: 9px; color: #888; display: block; margin-top: 1px; }
+.word-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 0.5px solid #F5F0E8; font-size: 12px; }
+.word-stat-row:last-child { border-bottom: none; }
+.word-stat-greek { font-family: "GFS Didot", Georgia, serif; font-size: 14px; color: #1a1a1a; }
+.word-stat-meaning { color: #888; font-size: 11px; }
+.word-stat-rate { font-weight: 600; color: #C9922A; min-width: 36px; text-align: right; }
+.word-stat-rate.bad { color: #A0522D; }
+
+.auth-bar { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.auth-info { font-size: 12px; color: #888; }
+.auth-btn { border: 0.5px solid #E8DFC8; background: #fff; border-radius: 6px; padding: 5px 14px; font-size: 12px; cursor: pointer; color: #C9922A; font-weight: 500; white-space: nowrap; }
+.auth-btn:hover { background: #FDF3DC; }
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_FtF3DfUatyvhnpFWtJnfhI7UvUp0sgw",
+    authDomain: "gr-lan-practice.firebaseapp.com",
+    projectId: "gr-lan-practice",
+    storageBucket: "gr-lan-practice.firebasestorage.app",
+    messagingSenderId: "487642891418",
+    appId: "1:487642891418:web:3c0693a7b85623c9944b23"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  // Auth state
+  auth.onAuthStateChanged(user => {
+    window._fbUser = user;
+    const btn = document.getElementById('auth-btn');
+    const info = document.getElementById('auth-info');
+    if(user) {
+      if(btn) btn.textContent = '로그아웃';
+      if(info) info.textContent = user.displayName || user.email;
+      loadUserStats(user.uid);
+    } else {
+      if(btn) btn.textContent = 'Google 로그인';
+      if(info) info.textContent = '';
+    }
+  });
+
+  window.fbToggleAuth = () => {
+    if(window._fbUser) auth.signOut();
+    else auth.signInWithPopup(provider).catch(e => console.error(e));
+  };
+
+  window.fbSaveStats = async (stats) => {
+    const user = window._fbUser;
+    if(!user) return;
+    try {
+      await db.collection('users').doc(user.uid).collection('stats').doc('main').set({
+        total: stats.total,
+        correct: stats.correct,
+        letters: stats.letters,
+        words: stats.words,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch(e) { console.error('Save error:', e); }
+  };
+
+  window.fbLoadStats = async (uid) => {
+    try {
+      const snap = await db.collection('users').doc(uid).collection('stats').doc('main').get();
+      if(snap.exists) return snap.data();
+    } catch(e) { console.error('Load error:', e); }
+    return null;
+  };
+
+  async function loadUserStats(uid) {
+    const data = await window.fbLoadStats(uid);
+    if(data && window.loadTrainStats) window.loadTrainStats(data);
+  }
+</script>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex; align-items:baseline; gap:0.75rem; flex-wrap:wrap;">
+    <h1 style="font-size:20px; font-weight:600; letter-spacing:-0.01em;">고전 그리스어 어휘 · 알파벳 학습</h1>
+    <span style="font-family:'GFS Didot',Georgia,serif; font-size:15px; color:#C9922A; font-weight:400; letter-spacing:0.02em;">Ἑλληνικὸν Λεξικόν</span>
+  </div>
+  <div class="auth-bar">
+    <span class="auth-info" id="auth-info"></span>
+    <button class="auth-btn" id="auth-btn" onclick="typeof fbToggleAuth!=='undefined' ? fbToggleAuth() : alert('브라우저에서 파일을 직접 열어주세요.')">Google 로그인</button>
+  </div>
+</div>
+<div class="searchbar">
+  <input type="text" id="search" placeholder="한국어 뜻, 영어, 발음으로 검색 — love, 사랑, 아가페, agape..." oninput="onSearch()" />
+  <div class="filters">
+    <button class="fb active" data-f="all" onclick="setFilter('all')">전체</button>
+    <button class="fb nt"     data-f="nt"  onclick="setFilter('nt')">신약</button>
+    <button class="fb lxx"    data-f="lxx" onclick="setFilter('lxx')">LXX</button>
+    <button class="fb homer"  data-f="homer" onclick="setFilter('homer')">호메로스</button>
+    <button class="fb liturgy" data-f="liturgy" onclick="setFilter('liturgy')">예배</button>
+  </div>
+</div>
+<div class="main">
+  <div class="word-panel">
+    <div class="word-list-header">
+      <span id="stats-label">불러오는 중...</span>
+      <div style="display:flex;gap:6px;">
+        <button class="mode-btn active-mode" id="btn-study" onclick="setMode('study')">학습 모드</button>
+        <button class="mode-btn" id="btn-list" onclick="setMode('list')">단어 목록</button>
+        <button class="mode-btn" id="btn-train" onclick="setMode('train')">훈련 모드</button>
+      </div>
+    </div>
+
+    <div class="view-slider" id="view-slider">
+    <!-- STUDY VIEW -->
+    <div class="study-view" id="study-view">
+      <div class="word-nav">
+        <button class="nav-btn" onclick="navWord(-1)">← 이전</button>
+        <span class="nav-counter" id="nav-counter"></span>
+        <button class="nav-btn" onclick="navWord(1)">다음 →</button>
+      </div>
+      <div class="big-word" id="big-word">
+        <div style="color:#bbb;font-size:14px;">단어를 검색하거나 목록에서 선택해봐</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#aaa;margin-bottom:8px;">글자를 눌러봐 →</div>
+        <div class="letter-strip" id="letter-strip"></div>
+      </div>
+      <div class="active-box-left" id="alpha-active-box"></div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div class="list-view" id="list-view"></div>
+    <!-- TRAINING VIEW -->
+    <div class="train-view" id="train-view"></div>
+    <!-- TRAIN VIEW -->
+    
+    </div><!-- end view-slider -->
+  </div>
+
+  <!-- RIGHT: Alphabet panel -->
+  <div class="alpha-panel">
+    <div class="alpha-header">알파벳 24자</div>
+  
+    <div class="alpha-grid" id="alpha-grid"></div>
+    <div class="legend">
+      <div class="leg"><div class="ldot" style="background:#FDF3DC;border:1px solid #C9922A;"></div>영어랑 같음</div>
+      <div class="leg"><div class="ldot" style="background:#EAF0FA;border:1px solid #4A6FA5;"></div>비슷하지만 소리 다름</div>
+      <div class="leg"><div class="ldot" style="background:#f5f5f3;border:1px solid #ddd;"></div>새로운 글자</div>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+const ALPHA = [
+  { g:'Α α', n:'알파', s:'a', cls:'known', keys:['α','Α','ά','ἀ','ἁ','ἂ','ἃ','ἄ','ἅ','ά','ᾶ','ᾳ'] },
+  { g:'Β β', n:'베타', s:'v', cls:'known', keys:['β','Β'] },
+  { g:'Γ γ', n:'감마', s:'g', cls:'', keys:['γ','Γ'] },
+  { g:'Δ δ', n:'델타', s:'d', cls:'', keys:['δ','Δ'] },
+  { g:'Ε ε', n:'엡실론', s:'e', cls:'known', keys:['ε','Ε','έ','ἐ','ἑ','ἒ','ἓ','ἔ','ἕ','έ'] },
+  { g:'Ζ ζ', n:'제타', s:'z', cls:'', keys:['ζ','Ζ'] },
+  { g:'Η η', n:'에타', s:'이', cls:'similar', keys:['η','Η','ή','ἠ','ἡ','ἢ','ἣ','ἤ','ἥ','ἦ','ἧ','ή','ῆ','ῇ','ῄ'] },
+  { g:'Θ θ', n:'세타', s:'th', cls:'', keys:['θ','Θ'] },
+  { g:'Ι ι', n:'이오타', s:'i', cls:'known', keys:['ι','Ι','ί','ἰ','ἱ','ἲ','ἳ','ἴ','ἵ','ἶ','ἷ','ί','ΐ','ῖ','ῗ'] },
+  { g:'Κ κ', n:'카파', s:'k', cls:'known', keys:['κ','Κ'] },
+  { g:'Λ λ', n:'람다', s:'l', cls:'', keys:['λ','Λ'] },
+  { g:'Μ μ', n:'뮤', s:'m', cls:'known', keys:['μ','Μ'] },
+  { g:'Ν ν', n:'뉴', s:'n', cls:'known', keys:['ν','Ν'] },
+  { g:'Ξ ξ', n:'크시', s:'ks', cls:'', keys:['ξ','Ξ'] },
+  { g:'Ο ο', n:'오미크론', s:'o', cls:'known', keys:['ο','Ο','ό','ὀ','ὁ','ὂ','ὃ','ὄ','ὅ','ό'] },
+  { g:'Π π', n:'파이', s:'p', cls:'similar', keys:['π','Π'] },
+  { g:'Ρ ρ', n:'로', s:'r', cls:'similar', keys:['ρ','Ρ','ῥ','ῤ'] },
+  { g:'Σ σ/ς', n:'시그마', s:'s', cls:'', keys:['σ','Σ','ς'] },
+  { g:'Τ τ', n:'타우', s:'t', cls:'known', keys:['τ','Τ'] },
+  { g:'Υ υ', n:'입실론', s:'이', cls:'similar', keys:['υ','Υ','ύ','ὐ','ὑ','ὒ','ὓ','ὔ','ὕ','ὖ','ὗ','ύ','ΰ','ῦ','ῧ'] },
+  { g:'Φ φ', n:'파이', s:'f', cls:'', keys:['φ','Φ'] },
+  { g:'Χ χ', n:'카이', s:'ch', cls:'', keys:['χ','Χ'] },
+  { g:'Ψ ψ', n:'프사이', s:'ps', cls:'', keys:['ψ','Ψ'] },
+  { g:'Ω ω', n:'오메가', s:'o (긴)', cls:'', keys:['ω','Ω','ώ','ὠ','ὡ','ὢ','ὣ','ὤ','ὥ','ὦ','ὧ','ώ','ῲ','ῳ','ῴ','ῶ','ῷ'] },
+];
+</script>
+<script>
+const RAW = [
+  ['Κύριε ἐλέησον','퀴리에 엘레이손','Kyrie eleison','주여 자비를 베푸소서','구',["nt", "lxx", "liturgy"],"가장 기본적인 정교 기도"],
+  ['Κύριε','퀴리에','Kyrie','주님이여 (호격)','명사',["nt", "lxx", "liturgy"],null],
+  ['Κύριος','퀴리오스','Kyrios / Lord','주님','명사',["nt", "lxx", "liturgy"],null],
+  ['Θεοτόκος','테오토코스','Theotokos','하나님을 낳은 자 (성모)','명사',["liturgy"],"정교회 성모 칭호"],
+  ['Χριστός','크리스토스','Christos / Christ','기름부음 받은 자, 그리스도','명사',["nt", "lxx", "liturgy"],null],
+  ['Ἰησοῦς','이에수스','Iesous / Jesus','예수','명사',["nt", "liturgy"],null],
+  ['Ἅγιος','하기오스','Hagios / Holy','거룩한','형용사',["nt", "lxx", "liturgy"],null],
+  ['Πνεῦμα','프네우마','Pneuma / Spirit','영, 성령, 바람','명사',["nt", "lxx", "liturgy"],"영어 pneumatic의 어원"],
+  ['εἰρήνη','에이레네','Eirene / Peace','평화','명사',["nt", "lxx", "liturgy"],"예배 인사에 사용"],
+  ['ἀλληλούϊα','알렐루이아','Alleluia','주님을 찬양하라','감탄사',["lxx", "liturgy"],"히브리어 할렐루야에서"],
+  ['Ἀμήν','아멘','Amen','아멘, 진실로','감탄사',["nt", "lxx", "liturgy"],null],
+  ['Δόξα','독사','Doxa / Glory','영광','명사',["nt", "lxx", "liturgy"],"Δόξα ἐν ὑψίστοις"],
+  ['πατήρ','파테르','Pater / Father','아버지','명사',["nt", "lxx", "liturgy"],null],
+  ['υἱός','휘오스','Huios / Son','아들','명사',["nt", "lxx", "liturgy"],null],
+  ['ἄγγελος','앙겔로스','Angelos / Angel','천사, 사자','명사',["nt", "lxx", "liturgy"],"영어 angel의 어원"],
+  ['ἐκκλησία','에클레시아','Ekklesia / Church','교회, 모임','명사',["nt", "liturgy"],"영어 ecclesiastical의 어원"],
+  ['εὐαγγέλιον','에우앙겔리온','Euangelion / Gospel','복음','명사',["nt", "liturgy"],"영어 evangel의 어원"],
+  ['βαπτίζω','밥티조','Baptizo / Baptize','세례를 주다','동사',["nt", "liturgy"],null],
+  ['βάπτισμα','밥티스마','Baptisma / Baptism','세례','명사',["nt", "liturgy"],null],
+  ['εὐχαριστία','에우카리스티아','Eucharistia / Eucharist','감사, 성찬','명사',["nt", "liturgy"],"영어 Eucharist의 어원"],
+  ['λειτουργία','레이투르기아','Leitourgia / Liturgy','예배, 전례','명사',["lxx", "liturgy"],"영어 liturgy의 어원"],
+  ['ἱερεύς','히에레우스','Hiereus / Priest','사제, 제사장','명사',["nt", "lxx", "liturgy"],null],
+  ['ἐπίσκοπος','에피스코포스','Episkopos / Bishop','감독, 주교','명사',["nt", "liturgy"],"영어 bishop의 어원"],
+  ['πρεσβύτερος','프레스뷔테로스','Presbyteros / Priest','장로, 신부','명사',["nt", "liturgy"],"영어 priest의 어원"],
+  ['διάκονος','디아코노스','Diakonos / Deacon','집사, 부제','명사',["nt", "liturgy"],"영어 deacon의 어원"],
+  ['μυστήριον','뮈스테리온','Mysterion / Mystery','신비, 성사','명사',["nt", "liturgy"],"영어 mystery의 어원"],
+  ['σταυρός','스타우로스','Stauros / Cross','십자가','명사',["nt", "liturgy"],null],
+  ['ἀνάστασις','아나스타시스','Anastasis / Resurrection','부활','명사',["nt", "lxx", "liturgy"],null],
+  ['προσευχή','프로세우케','Proseuche / Prayer','기도','명사',["nt", "liturgy"],null],
+  ['ψαλμός','프살모스','Psalmos / Psalm','시편, 찬송','명사',["lxx", "liturgy"],"영어 psalm의 어원"],
+  ['Εὐλογητός','에울로게토스','Eulogetos / Blessed','찬양받으소서','형용사',["liturgy", "nt", "lxx"],"전례 시작 — Εὐλογητὴ ἡ βασιλεία"],
+  ['Σοφία','소피아','Sophia / Wisdom','지혜여! (주의 환기)','명사',["liturgy"],"전례 중 집례자 외침"],
+  ['Πρόσχωμεν','프로스코멘','Proschomen','주의를 기울입시다','동사',["liturgy"],null],
+  ['Εἰρήνη πᾶσιν','에이레네 파신','Eirene pasin / Peace be with all','여러분 모두에게 평화를','구',["liturgy"],null],
+  ['Ἄνω σχῶμεν τὰς καρδίας','아노 스코멘 타스 카르디아스','Ano schomen tas kardias','마음을 위로 드립시다','구',["liturgy"],null],
+  ['Τὰ ἅγια τοῖς ἁγίοις','타 하기아 토이스 하기오이스','Holy things for the holy','거룩한 것은 거룩한 자에게','구',["liturgy"],"성찬 전 외침"],
+  ['Εἷς Ἅγιος','헤이스 하기오스','Heis Hagios / One is Holy','한 분 거룩하신 분','구',["liturgy"],null],
+  ['Μεταλαμβάνω','메탈람바노','Metalambano / Receive Communion','성찬에 참여하다','동사',["liturgy"],null],
+  ['Κοινωνία','코이노니아','Koinonia / Communion','교통, 성찬 참여','명사',["liturgy", "nt"],null],
+  ['Μικρά Εἴσοδος','미크라 에이소도스','Little Entrance','소입장 (복음서 행렬)','명사',["liturgy"],null],
+  ['Μεγάλη Εἴσοδος','메갈레 에이소도스','Great Entrance','대입장 (성찬 예물 행렬)','명사',["liturgy"],null],
+  ['Ἀπόλυσις','아폴뤼시스','Apolysis / Dismissal','파송, 예배 마침','명사',["liturgy"],null],
+  ['Ἄξιον','악시온','Axion / It is worthy','합당하도다','형용사',["liturgy"],"봉헌 후 찬송"],
+  ['Ἄξιον καὶ δίκαιον','악시온 카이 디카이온','Worthy and right','합당하고 옳습니다','구',["liturgy"],null],
+  ['Ἅγιος ὁ Θεός','하기오스 호 테오스','Holy God','거룩하신 하나님','구',["liturgy"],"삼성송(Τρισάγιον) 첫 구절"],
+  ['Ἅγιος Ἰσχυρός','하기오스 이스퀴로스','Holy Mighty','거룩하신 전능자','구',["liturgy"],"삼성송 두 번째"],
+  ['Ἅγιος Ἀθάνατος','하기오스 아타나토스','Holy Immortal','거룩하신 불멸자','구',["liturgy"],"삼성송 세 번째"],
+  ['Δόξα Πατρί','독사 파트리','Glory to the Father','아버지께 영광','구',["liturgy"],"소영광송 시작"],
+  ['καὶ νῦν καὶ ἀεί','카이 뉜 카이 아에이','Both now and ever','이제와 항상','구',["liturgy"],null],
+  ['καὶ εἰς τοὺς αἰῶνας τῶν αἰώνων','카이 에이스 투스 아이오나스 톤 아이오논','unto ages of ages','세세에','구',["liturgy"],null],
+  ['Πιστεύω','피스테우오','Pisteuo / I believe','나는 믿습니다','동사',["liturgy", "nt"],"니케아 신경 첫 단어"],
+  ['παντοκράτωρ','판토크라토르','Pantokrator / Almighty','전능자','명사',["liturgy", "lxx"],"영어 Pantocrator의 어원"],
+  ['ὁμοούσιος','호모우시오스','Homoousios / Consubstantial','동일 본질의','형용사',["liturgy"],"니케아 신경 핵심 신학 용어"],
+  ['σαρκωθέντα','사르코텐타','Incarnate','육신이 되신','분사',["liturgy"],"성육신"],
+  ['σταυρωθέντα','스타우로텐타','Crucified','십자가에 못 박히신','분사',["liturgy"],null],
+  ['ἀναστάντα','아나스탄타','Risen','부활하신','분사',["liturgy"],null],
+  ['τὸ ζωοποιόν','토 조오포이온','the Giver of Life','생명을 주시는','형용사',["liturgy"],null],
+  ['Μίαν Ἁγίαν Καθολικήν','미안 하기안 카톨리켄','One Holy Catholic','하나의 거룩한 공교회','구',["liturgy"],null],
+  ['νεκρῶν ἀνάστασιν','네크론 아나스타신','Resurrection of the dead','죽은 자의 부활','구',["liturgy"],null],
+  ['Χρίσμα','크리스마','Chrisma / Chrismation','견진 성사 (도유)','명사',["liturgy"],"세례 직후 성유 도유"],
+  ['Ἐξομολόγηση','엑소몰로게시','Exomologesis / Confession','고해성사','명사',["liturgy"],null],
+  ['Γάμος','가모스','Gamos / Marriage','혼인','명사',["liturgy", "nt"],null],
+  ['Εὐχέλαιον','에우켈라이온','Euchelaion / Holy Unction','병자성사 (성유)','명사',["liturgy"],null],
+  ['Ἁγίασμα','하기아스마','Hagiasma / Holy Water','성수','명사',["liturgy"],null],
+  ['ἁγιάζω','하기아조','Hagiazo / Sanctify','거룩하게 하다','동사',["liturgy", "nt", "lxx"],null],
+  ['κατηχούμενος','카테쿠메노스','Catechumen','학습자 (세례 준비)','명사',["liturgy"],null],
+  ['νεοφώτιστος','네오포티스토스','Neophyte / Newly illumined','새로 세례받은 자','명사',["liturgy"],null],
+  ['τροπάριον','트로파리온','Troparion','단편 찬송 (트로파리온)','명사',["liturgy"],"정교 특유의 찬송 형식"],
+  ['κοντάκιον','콘타키온','Kontakion','콘타키온 (찬송)','명사',["liturgy"],null],
+  ['κανών','카논','Kanon / Canon','카논 (찬송 모음)','명사',["liturgy"],null],
+  ['ᾠδή','오데','Ode','송가','명사',["liturgy", "lxx"],null],
+  ['ἀκάθιστος','아카티스토스','Akathist','아카티스토스 찬송','명사',["liturgy"],"앉지 않고 서서 드리는 찬송"],
+  ['θεοτοκίον','테오토키온','Theotokion','성모 찬송','명사',["liturgy"],"모든 찬송 마지막 성모 구절"],
+  ['ἀπολυτίκιον','아폴뤼티키온','Apolytikion','파송 찬송','명사',["liturgy"],"해당일 주요 찬송"],
+  ['εἱρμός','헤이르모스','Heirmos','이르모스 (카논 첫 절)','명사',["liturgy"],null],
+  ['Πολυέλεος','폴뤼엘레오스','Polyeleos','폴리엘레오스 (대축일 시편 찬송)','명사',["liturgy"],null],
+  ['δοξαστικόν','독사스티콘','Doxastikon','영광송','명사',["liturgy"],null],
+  ['ὠκτώηχος','옥토에코스','Octoechos','8성 찬송집','명사',["liturgy"],"8가지 선법으로 구성"],
+  ['μηναῖον','메나이온','Menaion','월별 찬송집','명사',["liturgy"],"12권으로 구성"],
+  ['τριῴδιον','트리오디온','Triodion','대재절 찬송집','명사',["liturgy"],null],
+  ['πεντηκοστάριον','펜테코스타리온','Pentecostarion','부활절 후 찬송집','명사',["liturgy"],null],
+  ['Ἑσπερινός','헤스페리노스','Hesperinos / Vespers','저녁 기도','명사',["liturgy"],null],
+  ['Ὄρθρος','오르트로스','Orthros / Matins','아침 기도','명사',["liturgy"],null],
+  ['ἀπόδειπνον','아포데이프논','Apodeipnon / Compline','취침 전 기도','명사',["liturgy"],null],
+  ['Μεσονυκτικόν','메소뉙티콘','Mesonytikon / Midnight Office','자정 기도','명사',["liturgy"],null],
+  ['ἀγρυπνία','아그뤼프니아','Agrypnia / All-night Vigil','철야 기도','명사',["liturgy"],null],
+  ['Πάσχα','파스카','Pascha / Easter','부활절','명사',["liturgy", "lxx"],"히브리어 Pesach에서"],
+  ['Χριστὸς Ἀνέστη','크리스토스 아네스테','Christ is Risen','그리스도 부활하셨습니다','구',["liturgy"],"부활절 인사"],
+  ['Ἀληθῶς Ἀνέστη','알레토스 아네스테','Truly He is Risen','참으로 부활하셨습니다','구',["liturgy"],"부활절 응답"],
+  ['Μεγάλη Ἑβδομάς','메갈레 헤브도마스','Holy Week','성주간','명사',["liturgy"],null],
+  ['Μεγάλη Παρασκευή','메갈레 파라스케우에','Good Friday','성금요일','명사',["liturgy"],null],
+  ['Κυριακή','퀴리아케','Kyriake / Sunday','주일, 일요일','명사',["liturgy"],"주님의 날"],
+  ['Πεντηκοστή','펜테코스테','Pentekosti / Pentecost','오순절','명사',["liturgy", "nt", "lxx"],"50번째 날"],
+  ['Θεοφάνεια','테오파네이아','Theophany / Epiphany','신현절','명사',["liturgy"],null],
+  ['Μεταμόρφωσις','메타모르포시스','Metamorphosis / Transfiguration','변모','명사',["liturgy", "nt"],null],
+  ['Κοίμηση τῆς Θεοτόκου','코이메시스 테스 테오토쿠','Dormition of the Theotokos','성모 안식 (8월 15일)','명사',["liturgy"],null],
+  ['Εὐαγγελισμός','에우앙겔리스모스','Annunciation','수태고지 (3월 25일)','명사',["liturgy"],null],
+  ['Ὕψωσις τοῦ Σταυροῦ','휩소시스 투 스타우루','Exaltation of the Cross','성십자가 현양 (9월 14일)','명사',["liturgy"],null],
+  ['Νηστεία','네스테이아','Nesteia / Fast','금식','명사',["liturgy", "nt"],null],
+  ['Μεγάλη Τεσσαρακοστή','메갈레 테사라코스테','Great Lent','대재절','명사',["liturgy"],"부활절 전 40일"],
+  ['ἑορτή','헤오르테','Heorte / Feast','축일, 명절','명사',["liturgy", "nt", "lxx"],null],
+  ['νηστεύω','네스테우오','Nesteuo / To fast','금식하다','동사',["liturgy", "nt"],null],
+  ['Τριάς','트리아스','Trias / Trinity','삼위일체','명사',["liturgy"],null],
+  ['ὑπόστασις','휘포스타시스','Hypostasis / Person','위격','명사',["liturgy", "nt"],"삼위일체 신학 핵심"],
+  ['οὐσία','우시아','Ousia / Essence','본질, 실체','명사',["liturgy"],"철학/신학 핵심 용어"],
+  ['θέωσις','테오시스','Theosis / Deification','신화 (하나님과 합일)','명사',["liturgy"],"정교 구원론의 핵심"],
+  ['ἐνέργεια','에네르게이아','Energeia / Energy','신적 작용','명사',["liturgy", "nt"],"팔라마스 신학의 핵심"],
+  ['σάρκωσις','사르코시스','Sarkosis / Incarnation','성육신','명사',["liturgy"],null],
+  ['Θεάνθρωπος','테안트로포스','Theanthropos / God-man','신인(神人), 그리스도','명사',["liturgy"],null],
+  ['κένωσις','케노시스','Kenosis / Self-emptying','자기 비움','명사',["liturgy"],"빌립보서 2:7"],
+  ['ὀρθοδοξία','오르토독시아','Orthodoxia / Orthodoxy','올바른 믿음, 정교','명사',["liturgy"],null],
+  ['αἵρεσις','하이레시스','Hairesis / Heresy','이단','명사',["liturgy", "nt"],"영어 heresy의 어원"],
+  ['Παράδοσις','파라도시스','Paradosis / Tradition','전승, 전통','명사',["liturgy", "nt"],null],
+  ['Οἰκονομία','오이코노미아','Oikonomia / Economy','경륜, 섭리','명사',["liturgy"],null],
+  ['Παρουσία','파루시아','Parousia / Second Coming','재림','명사',["liturgy", "nt"],null],
+  ['Παράδεισος','파라데이소스','Paradeisos / Paradise','낙원','명사',["liturgy", "nt", "lxx"],"영어 paradise의 어원"],
+  ['εἰκών','에이콘','Eikon / Icon','형상, 이콘','명사',["liturgy", "nt", "lxx"],"영어 icon의 어원"],
+  ['ἀπόφασις','아포파시스','Apophasis / Apophatic','부정 신학','명사',["liturgy"],"하나님은 표현 불가"],
+  ['κατήχηση','카테케시','Katechesis / Catechesis','교리 교육','명사',["liturgy"],null],
+  ['σχίσμα','스키스마','Schisma / Schism','분열','명사',["liturgy"],"영어 schism의 어원"],
+  ['Πατριάρχης','파트리아르케스','Patriarches / Patriarch','총대주교','명사',["liturgy"],null],
+  ['Μητροπολίτης','메트로폴리테스','Metropolites / Metropolitan','수도대주교','명사',["liturgy"],null],
+  ['Ἀρχιεπίσκοπος','아르키에피스코포스','Archiepiskopos / Archbishop','대주교','명사',["liturgy"],null],
+  ['Ἀρχιμανδρίτης','아르키만드리테스','Archimandrites / Archimandrite','수도원장','명사',["liturgy"],null],
+  ['Ἱερομόναχος','히에로모나코스','Hieromonachos / Hieromonk','수도사제','명사',["liturgy"],null],
+  ['μοναχός','모나코스','Monachos / Monk','수도사','명사',["liturgy"],"영어 monk의 어원"],
+  ['χειροτονία','케이로토니아','Cheirotonia / Ordination','성품 안수','명사',["liturgy"],null],
+  ['σχῆμα','스케마','Schema / Monastic habit','수도복, 수도 서원','명사',["liturgy"],null],
+  ['θυμιατήριον','튀미아테리온','Thymiaterion / Censer','향로','명사',["liturgy", "lxx"],null],
+  ['θυμίαμα','튀미아마','Thymiama / Incense','향','명사',["liturgy", "lxx"],null],
+  ['ποτήριον','포테리온','Poterion / Chalice','잔, 성배','명사',["liturgy", "nt"],null],
+  ['Ἅγιον Βῆμα','하기온 베마','Holy Bema / Sanctuary','성소, 제단 구역','명사',["liturgy"],null],
+  ['θυσιαστήριον','튀시아스테리온','Thysiastirion / Altar','제단','명사',["liturgy", "lxx"],null],
+  ['Ἅγια Τράπεζα','하기아 트라페자','Holy Table / Altar Table','성찬대','명사',["liturgy"],null],
+  ['Πρόθεσις','프로테시스','Prothesis','예비 성찬대','명사',["liturgy"],"제병 준비 장소"],
+  ['τέμπλον','템플론','Templon / Iconostasis','성화벽','명사',["liturgy"],null],
+  ['ὡραῖαι πύλαι','호라이아이 퓔라이','Royal Doors','왕의 문','명사',["liturgy"],"성화벽 중앙 문"],
+  ['νάρθηξ','나르텍스','Narthex','나르텍스 (현관)','명사',["liturgy"],null],
+  ['ἄμβων','암본','Ambon / Ambo','강단, 설교단','명사',["liturgy"],null],
+  ['Ἐπιτραχήλιον','에피트라켈리온','Epitrachelion / Stole','영대 (사제 목 영대)','명사',["liturgy"],null],
+  ['Φελόνιον','펠로니온','Phelonion / Chasuble','제의 (사제 겉옷)','명사',["liturgy"],null],
+  ['Ὠμοφόριον','오모포리온','Omophorion / Pallium','주교 어깨띠','명사',["liturgy"],null],
+  ['φιλάνθρωπε','필란트로페','Philanthrope / Lover of mankind','인류를 사랑하시는 분이여','호격',["liturgy"],"정교 기도의 단골 표현"],
+  ['ἐλεῆμον','엘레에몬','Eleemon / Merciful','자비로우신','형용사',["liturgy"],null],
+  ['πρεσβείαις','프레스베이아이스','Presbeiais / Intercessions','중보로','명사',["liturgy"],null],
+  ['σῷζε ἡμᾶς','소제 헤마스','Save us','우리를 구원하소서','구',["liturgy"],null],
+  ['ῥῦσαι ἡμᾶς','뤼사이 헤마스','Deliver us','우리를 구하소서','구',["liturgy"],null],
+  ['Φῶς ἱλαρόν','포스 힐라론','Phos Hilaron / O Gladsome Light','기쁜 빛이여','구',["liturgy"],"저녁기도 고대 찬송"],
+  ['Νῦν ἀπολύεις','뉜 아폴뤼에이스','Nunc Dimittis / Now lettest thou depart','이제 보내소서','구',["liturgy", "nt"],"시므온의 노래 (눅 2:29)"],
+  ['Μεγαλύνει ἡ ψυχή μου','메갈뤼네이 헤 프쉬케 무','Magnificat / My soul magnifies','내 영혼이 높이 드립니다','구',["liturgy", "nt"],"마리아 찬가 (눅 1:46)"],
+  ['Ἄξιόν ἐστιν','악시온 에스틴','Axion Estin / It is truly meet','참으로 합당하도다','구',["liturgy"],"성모 찬송 시작"],
+  ['Ὑπεραγία Θεοτόκε','휘페라기아 테오토케','Most Holy Theotokos','지극히 거룩하신 성모여','호격',["liturgy"],null],
+  ['Εὐλόγει ἡ ψυχή μου','에울로게이 헤 프쉬케 무','Bless the Lord O my soul','내 영혼아 찬양하라','구',["liturgy", "lxx"],"시편 103편"],
+  ['Μάρτυς','마르튀스','Martys / Martyr','순교자, 증인','명사',["liturgy", "nt"],"영어 martyr의 어원"],
+  ['Ὅσιος','호시오스','Hosios / Venerable','수도 성인','명사',["liturgy"],null],
+  ['Ἱερομάρτυς','히에로마르튀스','Hieromartyr','사제 순교자','명사',["liturgy"],null],
+  ['Ἱεράρχης','히에라르케스','Hierarches','성직자 성인','명사',["liturgy"],null],
+  ['Ἀνάργυρος','아나르귀로스','Anargyros / Unmercenary','무보수 의사 성인','명사',["liturgy"],null],
+  ['Πρωτομάρτυς','프로토마르튀스','Protomartyr','첫 순교자','명사',["liturgy"],"스데반 집사"],
+  ['Ἰσαπόστολος','이사포스톨로스','Equal-to-the-Apostles','사도와 동등한 성인','명사',["liturgy"],null],
+  ['Μεγαλομάρτυς','메갈로마르튀스','Great Martyr','위대한 순교자','명사',["liturgy"],null],
+  ['θεός','테오스','Theos / God','하나님, 신','명사',["nt", "lxx"],null],
+  ['λόγος','로고스','Logos / Word','말씀, 이성, 언어','명사',["nt", "lxx", "homer"],"요한복음 1:1"],
+  ['ἀγάπη','아가페','Agape / Love','사랑 (무조건적)','명사',["nt", "lxx"],null],
+  ['πίστις','피스티스','Pistis / Faith','믿음','명사',["nt"],null],
+  ['χάρις','카리스','Charis / Grace','은혜','명사',["nt", "lxx"],"영어 charisma의 어원"],
+  ['νόμος','노모스','Nomos / Law','율법, 법','명사',["nt", "lxx"],null],
+  ['ζωή','조에','Zoe / Life','생명','명사',["nt", "lxx"],null],
+  ['ἄνθρωπος','안트로포스','Anthropos / Human','사람, 인간','명사',["nt", "lxx", "homer"],"영어 anthropology의 어원"],
+  ['κόσμος','코스모스','Kosmos / World','세상, 우주','명사',["nt", "lxx", "homer"],"영어 cosmos의 어원"],
+  ['βασιλεία','바실레이아','Basileia / Kingdom','나라, 왕국','명사',["nt", "lxx"],null],
+  ['βασιλεύς','바실레우스','Basileus / King','왕','명사',["nt", "lxx", "homer"],null],
+  ['ἁμαρτία','하마르티아','Hamartia / Sin','죄','명사',["nt", "lxx"],"영어 hamartiology의 어원"],
+  ['δικαιοσύνη','디카이오쉬네','Dikaiosyne / Righteousness','의로움, 정의','명사',["nt", "lxx"],null],
+  ['σωτηρία','소테리아','Soteria / Salvation','구원','명사',["nt", "lxx"],null],
+  ['σωτήρ','소테르','Soter / Savior','구원자','명사',["nt", "lxx", "homer"],null],
+  ['ἀλήθεια','알레테이아','Aletheia / Truth','진리','명사',["nt", "lxx"],null],
+  ['καρδία','카르디아','Kardia / Heart','마음, 심장','명사',["nt", "lxx"],"영어 cardiac의 어원"],
+  ['ψυχή','프쉬케','Psyche / Soul','영혼, 생명','명사',["nt", "lxx", "homer"],"영어 psyche의 어원"],
+  ['σῶμα','소마','Soma / Body','몸, 육체','명사',["nt", "lxx"],"영어 somatic의 어원"],
+  ['φῶς','포스','Phos / Light','빛','명사',["nt", "lxx"],"영어 photography의 어원"],
+  ['ὁδός','호도스','Hodos / Way','길, 도','명사',["nt", "lxx"],"영어 exodus의 어원"],
+  ['ἔργον','에르곤','Ergon / Work','일, 행위','명사',["nt", "lxx", "homer"],"영어 energy의 어원"],
+  ['λαός','라오스','Laos / People','백성','명사',["nt", "lxx"],"영어 laity의 어원"],
+  ['ἔθνος','에트노스','Ethnos / Nation','민족, 이방인','명사',["nt", "lxx"],"영어 ethnic의 어원"],
+  ['δοῦλος','둘로스','Doulos / Servant','종, 노예','명사',["nt", "lxx"],null],
+  ['ἀδελφός','아델포스','Adelphos / Brother','형제','명사',["nt", "lxx"],"영어 Philadelphia의 어원"],
+  ['μαθητής','마테테스','Mathetes / Disciple','제자','명사',["nt"],null],
+  ['ἀπόστολος','아포스톨로스','Apostolos / Apostle','사도','명사',["nt", "liturgy"],"영어 apostle의 어원"],
+  ['προφήτης','프로페테스','Prophetes / Prophet','선지자','명사',["nt", "lxx"],"영어 prophet의 어원"],
+  ['ἄρτος','아르토스','Artos / Bread','빵','명사',["nt", "lxx"],null],
+  ['ὕδωρ','휘도르','Hydor / Water','물','명사',["nt", "lxx", "homer"],"영어 hydro의 어원"],
+  ['αἷμα','하이마','Haima / Blood','피, 혈','명사',["nt", "lxx", "homer"],"영어 haematology의 어원"],
+  ['θάνατος','타나토스','Thanatos / Death','죽음','명사',["nt", "lxx", "homer"],"영어 euthanasia의 어원"],
+  ['νεκρός','네크로스','Nekros / Dead','죽은','형용사',["nt", "lxx"],"영어 necromancy의 어원"],
+  ['σοφία','소피아','Sophia / Wisdom','지혜','명사',["nt", "lxx"],"영어 philosophy의 어원"],
+  ['γνῶσις','그노시스','Gnosis / Knowledge','지식','명사',["nt", "lxx"],"영어 gnosis의 어원"],
+  ['νοῦς','누스','Nous / Mind','마음, 지성','명사',["nt", "lxx"],"영어 nous의 어원"],
+  ['αἰών','아이온','Aion / Age','시대, 영원','명사',["nt", "lxx", "homer"],"영어 aeon의 어원"],
+  ['λέγω','레고','Lego / Say','말하다','동사',["nt", "lxx", "homer"],null],
+  ['εἰμί','에이미','Eimi / Be','이다, 있다','동사',["nt", "lxx", "homer"],null],
+  ['ἔχω','에코','Echo / Have','가지다','동사',["nt", "lxx", "homer"],null],
+  ['ποιέω','포이에오','Poieo / Do, Make','만들다, 하다','동사',["nt", "lxx", "homer"],"영어 poem의 어원"],
+  ['ὁράω','호라오','Horao / See','보다','동사',["nt", "lxx", "homer"],null],
+  ['ἀκούω','아쿠오','Akouo / Hear','듣다','동사',["nt", "lxx"],"영어 acoustic의 어원"],
+  ['γινώσκω','기노스코','Ginosko / Know','알다','동사',["nt", "lxx"],null],
+  ['πιστεύω','피스테우오','Pisteuo / Believe','믿다','동사',["nt"],null],
+  ['ἀγαπάω','아가파오','Agapao / Love','사랑하다','동사',["nt", "lxx"],null],
+  ['δίδωμι','디도미','Didomi / Give','주다','동사',["nt", "lxx", "homer"],null],
+  ['σῴζω','소조','Sozo / Save','구원하다','동사',["nt", "lxx"],null],
+  ['κρίνω','크리노','Krino / Judge','판단하다','동사',["nt", "lxx"],"영어 criterion의 어원"],
+  ['μένω','메노','Meno / Remain','머물다, 거하다','동사',["nt", "lxx"],null],
+  ['γίνομαι','기노마이','Ginomai / Become','되다, 일어나다','동사',["nt", "lxx", "homer"],null],
+  ['ἀγαθός','아가토스','Agathos / Good','선한, 좋은','형용사',["nt", "lxx", "homer"],null],
+  ['κακός','카코스','Kakos / Evil','나쁜, 악한','형용사',["nt", "lxx", "homer"],null],
+  ['δίκαιος','디카이오스','Dikaios / Righteous','의로운','형용사',["nt", "lxx"],null],
+  ['μέγας','메가스','Megas / Great','큰','형용사',["nt", "lxx", "homer"],"영어 mega의 어원"],
+  ['μικρός','미크로스','Mikros / Small','작은','형용사',["nt", "lxx"],"영어 micro의 어원"],
+  ['πρῶτος','프로토스','Protos / First','첫 번째','형용사',["nt", "lxx", "homer"],"영어 proto의 어원"],
+  ['ἔσχατος','에스카토스','Eschatos / Last','마지막','형용사',["nt", "lxx"],"영어 eschatology의 어원"],
+  ['αἰώνιος','아이오니오스','Aionios / Eternal','영원한','형용사',["nt", "lxx"],null],
+  ['καλός','칼로스','Kalos / Beautiful','아름다운, 훌륭한','형용사',["nt", "lxx", "homer"],null],
+  ['ἐν','엔','en / in','안에, ~로','전치사',["nt", "lxx", "homer"],null],
+  ['εἰς','에이스','eis / into','~안으로','전치사',["nt", "lxx", "homer"],null],
+  ['ἐκ / ἐξ','에크/엑스','ek/ex / from','~로부터','전치사',["nt", "lxx", "homer"],null],
+  ['πρός','프로스','pros / toward','~를 향하여','전치사',["nt", "lxx", "homer"],null],
+  ['διά','디아','dia / through','~를 통하여','전치사',["nt", "lxx", "homer"],"영어 dia의 어원"],
+  ['κατά','카타','kata / according to','~에 따라, 아래로','전치사',["nt", "lxx", "homer"],"영어 cata의 어원"],
+  ['μετά','메타','meta / with, after','~와 함께, 후에','전치사',["nt", "lxx", "homer"],"영어 meta의 어원"],
+  ['ἐπί','에피','epi / upon','~위에','전치사',["nt", "lxx", "homer"],"영어 epi의 어원"],
+  ['περί','페리','peri / around, about','~에 대하여','전치사',["nt", "lxx", "homer"],"영어 peri의 어원"],
+  ['ὑπό','휘포','hypo / under','~아래에','전치사',["nt", "lxx", "homer"],"영어 hypo의 어원"],
+  ['ὑπέρ','휘페르','hyper / over','~위에, ~을 위하여','전치사',["nt", "lxx"],"영어 hyper의 어원"],
+  ['ἀντί','안티','anti / instead of','~대신에, 반대로','전치사',["nt", "lxx", "homer"],"영어 anti의 어원"],
+  ['παρά','파라','para / beside','~곁에','전치사',["nt", "lxx", "homer"],"영어 para의 어원"],
+  ['ἀρχή','아르케','Arche / Beginning','시작, 원리','명사',["nt", "lxx", "homer"],"창세기 1:1 — ἐν ἀρχῇ"],
+  ['ἡμέρα','헤메라','Hemera / Day','날, 하루','명사',["nt", "lxx", "homer"],null],
+  ['νύξ','뉙스','Nyx / Night','밤','명사',["nt", "lxx", "homer"],null],
+  ['πῦρ','퓌르','Pyr / Fire','불','명사',["nt", "lxx", "homer"],"영어 pyrotechnics의 어원"],
+  ['θάλασσα','탈라사','Thalassa / Sea','바다','명사',["nt", "lxx", "homer"],null],
+  ['οἶκος','오이코스','Oikos / House','집','명사',["nt", "lxx", "homer"],"영어 eco의 어원"],
+  ['πόλις','폴리스','Polis / City','도시','명사',["nt", "lxx", "homer"],"영어 politics의 어원"],
+  ['διαθήκη','디아테케','Diatheke / Covenant','언약','명사',["nt", "lxx"],null],
+  ['κτίσις','크티시스','Ktisis / Creation','창조, 피조물','명사',["nt", "lxx"],null],
+  ['θυσία','튀시아','Thysia / Sacrifice','제사, 희생','명사',["nt", "lxx"],null],
+  ['ἱλασμός','힐라스모스','Hilasmos / Atonement','속죄','명사',["nt", "lxx"],null],
+  ['προφητεία','프로페테이아','Propheteia / Prophecy','예언','명사',["nt", "lxx"],null],
+  ['μῆνις','메니스','Menis / Wrath','분노, 진노','명사',["homer"],"일리아스 첫 단어"],
+  ['Μοῦσα','무사','Mousa / Muse','뮤즈 (시의 여신)','명사',["homer"],"오디세이아: ἄνδρα μοι ἔννεπε μοῦσα"],
+  ['ἥρως','헤로스','Heros / Hero','영웅','명사',["homer", "lxx"],"영어 hero의 어원"],
+  ['ἀνήρ','아네르','Aner / Man','남자, 영웅','명사',["homer", "lxx"],null],
+  ['νόστος','노스토스','Nostos / Return home','귀향','명사',["homer"],"오디세이아의 핵심 주제"],
+  ['πόλεμος','폴레모스','Polemos / War','전쟁','명사',["homer", "lxx"],"영어 polemic의 어원"],
+  ['ἀρετή','아레테','Arete / Virtue','덕, 탁월함','명사',["homer", "lxx"],"그리스 철학 핵심"],
+  ['μῦθος','뮈토스','Mythos / Myth','이야기, 신화','명사',["homer"],"영어 myth의 어원"],
+  ['κλέος','클레오스','Kleos / Glory','명성, 영광','명사',["homer"],null],
+  ['μοῖρα','모이라','Moira / Fate','운명','명사',["homer"],null],
+  ['ἔπος','에포스','Epos / Epic','말, 서사시','명사',["homer"],"영어 epic의 어원"],
+  ['φίλος','필로스','Philos / Friend','사랑하는, 친구','형용사/명사',["homer", "nt"],"영어 philo의 어원"],
+  ['ξένος','크세노스','Xenos / Stranger','이방인, 손님','명사',["homer", "lxx"],"영어 xenophobia의 어원"],
+  ['ἵππος','히포스','Hippos / Horse','말 (동물)','명사',["homer", "lxx"],"영어 hippopotamus의 어원"],
+  ['φύσις','퓌시스','Physis / Nature','자연, 본성','명사',["lxx", "homer"],"영어 physics의 어원"],
+  ['ἀπάθεια','아파테이아','Apatheia / Apathy','감정의 평정','명사',["lxx"],"스토아 이상"],
+  ['προαίρεσις','프로아이레시스','Prohairesis / Will','의지, 선택','명사',["lxx"],"에픽테토스의 핵심"],
+  ['πάθος','파토스','Pathos / Passion','감정, 열정','명사',["lxx", "homer"],"영어 pathos의 어원"],
+  ['ἡδονή','헤도네','Hedone / Pleasure','쾌락','명사',["lxx", "homer"],"영어 hedonism의 어원"],
+  ['φόβος','포보스','Phobos / Fear','두려움','명사',["lxx", "homer"],"영어 phobia의 어원"],
+  ['θεωρία','테오리아','Theoria / Theory','관조, 이론','명사',["lxx"],"영어 theory의 어원"],
+  ['πράξις','프락시스','Praxis / Practice','실천, 행동','명사',["lxx"],"영어 practice의 어원"],
+  ['φρόνησις','프로네시스','Phronesis / Practical wisdom','실천적 지혜','명사',["lxx"],null],
+  ['εὐδαιμονία','에우다이모니아','Eudaimonia / Happiness','행복, 번영','명사',["homer"],"아리스토텔레스의 목적"]
+];
+
+// ── Init ──
+const WORDS = (()=>{
+  const seen = new Set();
+  return RAW.filter(([g])=>{ if(seen.has(g)) return false; seen.add(g); return true; })
+    .map(([g,pron,english,meaning,pos,sources,note])=>({greek:g,pron,english,meaning,pos,sources,note:note||null}));
+})();
+
+let filtered = [...WORDS];
+let activeFilter = 'all';
+let currentIdx = 0;
+let mode = 'study';
+
+// ── Build alphabet grid ──
+const alphaGrid = document.getElementById('alpha-grid');
+ALPHA.forEach((a,i)=>{
+  const d = document.createElement('div');
+  d.className = 'apc ' + a.cls;
+  d.id = 'apc-' + i;
+  d.innerHTML = '<span class="ag">'+a.g+'</span><span class="an">'+a.n+'</span><span class="as">'+a.s+'</span>';
+  alphaGrid.appendChild(d);
+});
+
+// ── Helpers ──
+function tok(s){ return (s||'').replace(/[\s\/·\-()']/g,'').toLowerCase(); }
+function findAlphaIdx(ch){ return ALPHA.findIndex(a=>a.keys&&a.keys.includes(ch)); }
+
+function highlightAlpha(alphaIdx){
+  document.querySelectorAll('.apc').forEach(el=>el.classList.remove('lit'));
+  const box = document.getElementById('alpha-active-box');
+  if(alphaIdx < 0){
+    box.classList.remove('revealed');
+    return;
+  }
+  document.getElementById('apc-'+alphaIdx).classList.add('lit');
+  const a = ALPHA[alphaIdx];
+  box.innerHTML =
+    '<div class="alpha-active-greek">'+a.g+'</div>'+
+    '<div class="alpha-active-info">'+a.n+' &nbsp;·&nbsp; 소리: <span class="sound">'+a.s+'</span></div>';
+  box.classList.add('revealed');
+  document.getElementById('apc-'+alphaIdx).scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function clickLetter(ch, lboxId){
+  document.querySelectorAll('.lbox').forEach(el=>el.classList.remove('lactive'));
+  const lb = document.getElementById(lboxId);
+  if(lb) lb.classList.add('lactive');
+  highlightAlpha(findAlphaIdx(ch));
+}
+
+function renderLetterStrip(word){
+  const strip = document.getElementById('letter-strip');
+  strip.innerHTML = '';
+  [...word].forEach((ch,i)=>{
+    if(ch===' ') return;
+    const ai = findAlphaIdx(ch);
+    const sound = ai>=0 ? ALPHA[ai].s : '?';
+    const id = 'lb-'+i;
+    const d = document.createElement('div');
+    d.className = 'lbox';
+    d.id = id;
+    d.innerHTML = '<span class="lchar">'+ch+'</span><span class="lsound">'+sound+'</span>';
+    d.onclick = ()=>clickLetter(ch, id);
+    strip.appendChild(d);
+  });
+}
+
+// ── Study view ──
+function showWord(idx){
+  if(!filtered.length) return;
+  currentIdx = Math.max(0, Math.min(idx, filtered.length-1));
+  const w = filtered[currentIdx];
+  const tagMap = {nt:'신약',lxx:'LXX',homer:'호메로스',liturgy:'예배'};
+  const tags = w.sources.map(s=>'<span class="tag '+s+'">'+tagMap[s]+'</span>').join('');
+  document.getElementById('big-word').innerHTML =
+    '<div class="big-greek">'+w.greek+'</div>'+
+    '<div class="big-pron">'+w.pron+'<span class="en">'+w.english+'</span></div>'+
+    '<div class="big-meaning">'+w.meaning+'</div>'+
+    '<div class="big-pos">'+w.pos+'</div>'+
+    '<div class="big-tags">'+tags+'</div>'+
+    (w.note?'<div class="big-note">📌 '+w.note+'</div>':'');
+  document.getElementById('nav-counter').textContent = (currentIdx+1) + ' / ' + filtered.length;
+  renderLetterStrip(w.greek);
+  highlightAlpha(-1);
+}
+
+function navWord(dir){
+  showWord(currentIdx + dir);
+}
+
+// ── List view ──
+function renderList(){
+  const listView = document.getElementById('list-view');
+  const tagMap = {nt:'신약',lxx:'LXX',homer:'호메로스',liturgy:'예배'};
+  if(!filtered.length){ listView.innerHTML='<div class="empty">검색 결과가 없어요.</div>'; return; }
+  listView.innerHTML = filtered.map((w,i)=>{
+    const tags = w.sources.map(s=>'<span class="tag '+s+'">'+tagMap[s]+'</span>').join('');
+    return '<div class="lcard'+(i===currentIdx?' selected':'')+'" onclick="selectFromList('+i+')">'+
+      '<div class="lcard-greek">'+w.greek+'</div>'+
+      '<div class="lcard-pron">'+w.pron+' <span class="en">'+w.english+'</span></div>'+
+      '<div class="lcard-meaning">'+w.meaning+'</div>'+
+      '<div class="lcard-tags">'+tags+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+function selectFromList(i){
+  currentIdx = i;
+  setMode('study');
+  showWord(i);
+}
+
+// ── Mode ──
+function setMode(m){
+  mode = m;
+  const slider = document.getElementById('view-slider');
+  slider.classList.remove('show-list','show-train');
+  if(m==='list') slider.classList.add('show-list');
+  if(m==='train') slider.classList.add('show-train');
+  document.getElementById('btn-study').classList.toggle('active-mode', m==='study');
+  document.getElementById('btn-list').classList.toggle('active-mode', m==='list');
+  document.getElementById('btn-train').classList.toggle('active-mode', m==='train');
+  if(m==='list') renderList();
+  else if(m==='train') initTrainView();
+  else showWord(currentIdx);
+}
+
+// ── Filter & search ──
+function setFilter(f){
+  activeFilter = f;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));
+  document.querySelector('[data-f="'+f+'"]').classList.add('active');
+  applyFilter();
+}
+
+function onSearch(){ applyFilter(); }
+
+function applyFilter(){
+  const q = tok(document.getElementById('search').value);
+  filtered = WORDS.filter(w=>{
+    if(activeFilter!=='all' && !w.sources.includes(activeFilter)) return false;
+    if(!q) return true;
+    return tok(w.pron).includes(q)||tok(w.meaning).includes(q)||tok(w.english).includes(q)||tok(w.greek).includes(q);
+  });
+  currentIdx = 0;
+  document.getElementById('stats-label').textContent = filtered.length+'개 단어 (전체 '+WORDS.length+'개)';
+  if(mode==='study') showWord(0);
+  else renderList();
+}
+
+// ── Init ──
+applyFilter();
+
+// ══════════════════════════════════════════
+// TRAINING MODE
+// ══════════════════════════════════════════
+const trainStats = {
+  total: 0, correct: 0, session: 0,
+  letters: {},  // { 'α': {correct:0, wrong:0} }
+  words: {}     // { 'greek': {correct:0, wrong:0, meaning:''} }
+};
+let trainSubMode = 'alpha';
+let alphaQueue = [];
+let currentAlpha = null;
+let alphaWrong = 0;
+let wordQueue = [];
+let currentWord = null;
+let currentLetterIdx = 0;
+let letterWrong = 0;
+let isProcessing = false;
+
+function initTrainView() {
+  const v = document.getElementById('train-view');
+  v.innerHTML = `
+    <div class="train-tabs">
+      <button class="train-tab active" id="tab-stats" onclick="switchTrainTab('stats')">통계</button>
+      <button class="train-tab" id="tab-alpha" onclick="switchTrainTab('alpha')">알파벳 훈련</button>
+      <button class="train-tab" id="tab-word" onclick="switchTrainTab('word')">단어 훈련</button>
+    </div>
+    <div id="train-content"></div>
+    <div id="train-stats-panel"></div>
+  `;
+  switchTrainTab('stats');
+}
+
+function switchTrainTab(tab) {
+  trainSubMode = tab;
+  ['alpha','word','stats'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  if(tab==='alpha') { buildAlphaQueue(); startAlphaTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); }
+  else if(tab==='word') { buildWordQueue(); startWordTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); }
+  else { document.getElementById('train-content').innerHTML=''; renderFullStats(); }
+}
+
+// ── Weighted queue ──
+function buildAlphaQueue() {
+  let pool = [];
+  ALPHA.forEach(a => {
+    const lc = a.g.split(' ')[1] || a.g.split(' ')[0];
+    const s = trainStats.letters[lc];
+    const weight = s ? Math.max(1, 1 + s.wrong * 2 - Math.floor(s.correct / 2)) : 1;
+    for(let i=0;i<weight;i++) pool.push(a);
+  });
+  alphaQueue = pool.sort(() => Math.random() - 0.5);
+}
+
+function buildWordQueue() {
+  let pool = [...WORDS];
+  wordQueue = pool.sort(() => Math.random() - 0.5);
+}
+
+function nextRandom(queue) {
+  return queue[Math.floor(Math.random() * Math.min(queue.length, 8))];
+}
+
+// ── Alpha Trainer ──
+function startAlphaTrainer() {
+  currentAlpha = nextRandom(alphaQueue) || ALPHA[Math.floor(Math.random()*ALPHA.length)];
+  alphaWrong = 0;
+  const lc = currentAlpha.g.split(' ')[1] || '';
+  document.getElementById('train-content').innerHTML = `
+    <div class="train-card">
+      <div class="train-prompt">${lc}</div>
+      <div class="train-subprompt">이 글자의 소리는?</div>
+      <div class="train-feedback" id="t-feedback"></div>
+    </div>
+    <div class="train-input-row">
+      <input class="train-input" id="t-input" placeholder="소리 입력..." autocomplete="off" spellcheck="false"/>
+      <button class="train-submit" onclick="checkAlpha()">확인</button>
+    </div>
+    <div class="train-hint" id="t-hint"></div>
+  `;
+  const inp = document.getElementById('t-input');
+  inp.focus();
+  inp.onkeydown = e => { if(e.key==='Enter') checkAlpha(); };
+}
+
+function checkAlpha() {
+  if(isProcessing) return;
+  const inp = document.getElementById('t-input');
+  const val = inp.value.trim().toLowerCase();
+  if(!val) return;
+  isProcessing = true;
+  const a = currentAlpha;
+  const lc = a.g.split(' ')[1] || a.g;
+  const correct = a.s.toLowerCase().split('/').map(s=>s.trim());
+  if(!trainStats.letters[lc]) trainStats.letters[lc] = {correct:0, wrong:0, name:a.n};
+  trainStats.total++; trainStats.session++;
+  const ok = correct.some(c => val===c || val.replace(/\s/g,'')===c.replace(/\s/g,''));
+  if(ok) {
+    trainStats.correct++;
+    trainStats.letters[lc].correct++;
+    document.getElementById('t-feedback').className='train-feedback correct';
+    document.getElementById('t-feedback').textContent='✓  '+a.n+' · '+a.s;
+    inp.value='';
+    renderMiniStats();
+    setTimeout(()=>{ isProcessing = false; buildAlphaQueue(); startAlphaTrainer(); }, 900);
+  } else {
+    trainStats.letters[lc].wrong++;
+    alphaWrong++;
+    document.getElementById('t-feedback').className='train-feedback wrong';
+    document.getElementById('t-feedback').textContent='✗  다시!';
+    if(alphaWrong>=2) document.getElementById('t-hint').textContent='힌트: '+a.n+' = '+a.s;
+    inp.value=''; inp.focus();
+    isProcessing = false;
+    renderMiniStats();
+  }
+}
+
+// ── Word Trainer ──
+function startWordTrainer() {
+  buildWordQueue();
+  currentWord = nextRandom(wordQueue);
+  if(!currentWord) return;
+  currentLetterIdx = 0; letterWrong = 0;
+  renderWordCard();
+}
+
+function getWordLetters(word) {
+  return [...word].map(ch => {
+    if(ch.trim()==='') return null;
+    const ai = ALPHA.findIndex(a=>a.keys&&a.keys.includes(ch));
+    return {char:ch, sound:ai>=0?ALPHA[ai].s:null, alphaIdx:ai};
+  }).filter(Boolean);
+}
+
+function renderWordCard() {
+  const w = currentWord;
+  const letters = getWordLetters(w.greek);
+  const prog = letters.map((l,i)=>{
+    let cls = 'lp-box' + (i<currentLetterIdx?' done':i===currentLetterIdx?' current':'');
+    const show = i<currentLetterIdx;
+    return `<div class="${cls}" id="lp-${i}"><span class="lp-char">${l.char}</span><span class="lp-sound${show?' revealed':''}">${show?(l.sound||'?'):''}</span></div>`;
+  }).join('');
+  document.getElementById('train-content').innerHTML = `
+    <div class="train-card">
+      <div class="train-subprompt">${w.meaning} · ${w.pos}</div>
+      <div class="word-trainer-word">${w.greek}</div>
+      <div class="letter-progress">${prog}</div>
+      <div class="train-feedback" id="t-feedback"></div>
+    </div>
+    <div class="train-input-row">
+      <input class="train-input" id="t-input" placeholder="${currentLetterIdx+1}번째 글자 소리..." autocomplete="off" spellcheck="false"/>
+      <button class="train-submit" onclick="checkWordLetter()">확인</button>
+    </div>
+    <div class="train-hint" id="t-hint"></div>
+  `;
+  const inp = document.getElementById('t-input');
+  inp.focus();
+  inp.onkeydown = e => { if(e.key==='Enter') checkWordLetter(); };
+}
+
+function checkWordLetter() {
+  if(isProcessing) return;
+  const inp = document.getElementById('t-input');
+  const val = inp.value.trim().toLowerCase();
+  if(!val) return;
+  isProcessing = true;
+  const w = currentWord;
+  const letters = getWordLetters(w.greek);
+  const letter = letters[currentLetterIdx];
+  if(!letter) return;
+  const correct = (letter.sound||'').toLowerCase().split('/').map(s=>s.trim());
+  const lc = letter.char;
+  if(!trainStats.letters[lc]) trainStats.letters[lc]={correct:0,wrong:0,name:lc};
+  if(!trainStats.words[w.greek]) trainStats.words[w.greek]={correct:0,wrong:0,meaning:w.meaning};
+  trainStats.total++; trainStats.session++;
+  const ok = correct.some(c=>val===c||val.replace(/\s/g,'')===c.replace(/\s/g,''));
+  if(ok) {
+    trainStats.correct++;
+    trainStats.letters[lc].correct++;
+    trainStats.words[w.greek].correct++;
+    letterWrong=0;
+    const box=document.getElementById('lp-'+currentLetterIdx);
+    if(box){box.className='lp-box done';box.querySelector('.lp-sound').className='lp-sound revealed';box.querySelector('.lp-sound').textContent=letter.sound||'?';}
+    currentLetterIdx++;
+    document.getElementById('t-feedback').className='train-feedback correct';
+    document.getElementById('t-feedback').textContent='✓';
+    document.getElementById('t-hint').textContent='';
+    inp.value='';
+    renderMiniStats();
+    if(currentLetterIdx>=letters.length){
+      document.getElementById('t-feedback').textContent='✓  '+w.greek+' = '+w.meaning;
+      inp.disabled=true; document.querySelector('.train-submit').disabled=true;
+      setTimeout(()=>{ isProcessing = false; startWordTrainer(); },1400);
+    } else {
+      const nb=document.getElementById('lp-'+currentLetterIdx);
+      if(nb) nb.className='lp-box current';
+      inp.placeholder=(currentLetterIdx+1)+'번째 글자 소리...'; inp.focus();
+    isProcessing = false;
+    }
+  } else {
+    trainStats.letters[lc].wrong++;
+    trainStats.words[w.greek].wrong++;
+    letterWrong++;
+    document.getElementById('t-feedback').className='train-feedback wrong';
+    document.getElementById('t-feedback').textContent='✗  다시!';
+    const box=document.getElementById('lp-'+currentLetterIdx);
+    if(box){box.classList.add('wrong-flash');setTimeout(()=>box.classList.remove('wrong-flash'),500);}
+    if(letterWrong>=2) document.getElementById('t-hint').textContent='힌트: '+(letter.sound||'?');
+    inp.value=''; inp.focus();
+    isProcessing = false;
+    renderMiniStats();
+  }
+}
+
+// ── Mini stats (shown below trainer) ──
+
+// ── Firebase integration ──
+window.loadTrainStats = function(data) {
+  if(data.total) trainStats.total = data.total;
+  if(data.correct) trainStats.correct = data.correct;
+  if(data.letters) trainStats.letters = data.letters;
+  if(data.words) trainStats.words = data.words;
+  // Refresh stats view if open
+  if(trainSubMode === 'stats') renderFullStats();
+  else renderMiniStats();
+};
+
+function renderMiniStats() {
+  const el = document.getElementById('train-stats-panel');
+  if(!el||trainSubMode==='stats') return;
+  const rate = trainStats.total>0 ? Math.round(trainStats.correct/trainStats.total*100) : 0;
+  const weakLetters = Object.entries(trainStats.letters)
+    .filter(([,v])=>v.wrong>0).sort((a,b)=>b[1].wrong-a[1].wrong).slice(0,5);
+  const weakWords = Object.entries(trainStats.words)
+    .filter(([,v])=>v.wrong>0).sort((a,b)=>b[1].wrong-a[1].wrong).slice(0,5);
+  el.innerHTML = `
+    <div class="stats-panel">
+      <div class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-box"><span class="stat-num">${trainStats.session}</span><span class="stat-lbl">이번 세션</span></div>
+          <div class="stat-box"><span class="stat-num">${trainStats.total}</span><span class="stat-lbl">총 시도</span></div>
+          <div class="stat-box"><span class="stat-num">${trainStats.correct}</span><span class="stat-lbl">정답</span></div>
+          <div class="stat-box"><span class="stat-num">${rate}%</span><span class="stat-lbl">정답률</span></div>
+        </div>
+      </div>
+      ${weakLetters.length?`<div class="stats-section">
+        <div class="stats-section-title">자주 틀리는 글자 Top 5</div>
+        <div class="weak-list">${weakLetters.map(([ch,v])=>`<div class="weak-item">${ch}<span class="wi-sub">오답 ${v.wrong}회</span></div>`).join('')}</div>
+      </div>`:''}
+      ${weakWords.length?`<div class="stats-section">
+        <div class="stats-section-title">자주 틀리는 단어 Top 5</div>
+        <div class="weak-list">${weakWords.map(([g,v])=>`<div class="weak-item">${g}<span class="wi-sub">${v.meaning} · 오답 ${v.wrong}회</span></div>`).join('')}</div>
+      </div>`:''}
+    </div>
+  `;
+}
+
+// ── Full Stats (stat tab) ──
+function renderFullStats() {
+  const rate = trainStats.total>0?Math.round(trainStats.correct/trainStats.total*100):0;
+
+  // Per-alphabet stats
+  const alphaStatsHtml = ALPHA.map(a=>{
+    const lc = a.g.split(' ')[1]||a.g.split(' ')[0];
+    const s = trainStats.letters[lc];
+    let cls='asg-item asg-none', rateStr='-';
+    if(s&&(s.correct+s.wrong)>0){
+      const r=Math.round(s.correct/(s.correct+s.wrong)*100);
+      cls='asg-item '+(r>=80?'asg-good':'asg-bad');
+      rateStr=r+'%';
+    }
+    return `<div class="${cls}"><span class="asg-char">${lc}</span><span class="asg-rate">${rateStr}</span></div>`;
+  }).join('');
+
+  // Learned words
+  const learnedWords = Object.entries(trainStats.words);
+  const weakWords5 = [...learnedWords].filter(([,v])=>v.wrong>0).sort((a,b)=>b[1].wrong-a[1].wrong).slice(0,5);
+  const weakLetters5 = Object.entries(trainStats.letters).filter(([,v])=>v.wrong>0).sort((a,b)=>b[1].wrong-a[1].wrong).slice(0,5);
+
+  const wordRowsHtml = learnedWords.length ? learnedWords
+    .sort((a,b)=>{
+      const ra=a[1].correct/(a[1].correct+a[1].wrong||1);
+      const rb=b[1].correct/(b[1].correct+b[1].wrong||1);
+      return ra-rb;
+    })
+    .map(([g,v])=>{
+      const r=v.correct+v.wrong>0?Math.round(v.correct/(v.correct+v.wrong)*100):0;
+      return `<div class="word-stat-row">
+        <span class="word-stat-greek">${g}</span>
+        <span class="word-stat-meaning">${v.meaning}</span>
+        <span class="word-stat-rate${r<60?' bad':''}">${r}%</span>
+      </div>`;
+    }).join('')
+    : '<div style="font-size:12px;color:#bbb;padding:0.5rem 0;">아직 연습한 단어가 없어</div>';
+
+  document.getElementById('train-content').innerHTML='';
+  document.getElementById('train-stats-panel').innerHTML = `
+    <div class="stats-panel">
+      <div class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-box"><span class="stat-num">${trainStats.session}</span><span class="stat-lbl">이번 세션</span></div>
+          <div class="stat-box"><span class="stat-num">${trainStats.total}</span><span class="stat-lbl">총 시도</span></div>
+          <div class="stat-box"><span class="stat-num">${trainStats.correct}</span><span class="stat-lbl">정답</span></div>
+          <div class="stat-box"><span class="stat-num">${rate}%</span><span class="stat-lbl">정답률</span></div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <div class="stats-section-title">알파벳 별 정답률</div>
+        <div class="alpha-stats-grid">${alphaStatsHtml}</div>
+      </div>
+
+      ${weakLetters5.length?`<div class="stats-section">
+        <div class="stats-section-title">자주 틀리는 글자 Top 5</div>
+        <div class="weak-list">${weakLetters5.map(([ch,v])=>`<div class="weak-item">${ch}<span class="wi-sub">오답 ${v.wrong}회 · 정답 ${v.correct}회</span></div>`).join('')}</div>
+      </div>`:''}
+
+      <div class="stats-section">
+        <div class="stats-section-title">학습한 단어 ${learnedWords.length}개 · 정답률 순</div>
+        <div>${wordRowsHtml}</div>
+      </div>
+
+      ${weakWords5.length?`<div class="stats-section">
+        <div class="stats-section-title">자주 틀리는 단어 Top 5</div>
+        <div class="weak-list">${weakWords5.map(([g,v])=>`<div class="weak-item">${g}<span class="wi-sub">${v.meaning} · 오답 ${v.wrong}회</span></div>`).join('')}</div>
+      </div>`:''}
+    </div>
+  `;
+}
+
+</script>
+</body>
+</html>
