@@ -212,7 +212,15 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F5F0E8; c
 .asg-item.asg-mastered { border-color: #8B6914; background: #F5EDD5; box-shadow: inset 0 0 0 1px #C9922A; }
 .asg-char { font-size: 14px; font-family: "GFS Didot", Georgia, serif; display: block; color: #1a1a1a; }
 .asg-rate { font-size: 9px; color: #888; display: block; margin-top: 1px; }
+.asg-count { font-size: 9px; color: #aaa; display: block; margin-top: 1px; }
 .asg-level { font-size: 8px; display: block; margin-top: 1px; }
+.day-list { display: flex; flex-direction: column; gap: 4px; }
+.day-row { display: grid; grid-template-columns: 110px 1fr 60px 90px; gap: 8px; align-items: center; padding: 6px 10px; border: 0.5px solid #E8DFC8; border-radius: 6px; background: #fafaf8; font-size: 12px; }
+.day-row.day-today { border-color: #C9922A; background: #FDF3DC; font-weight: 500; }
+.day-date { color: #555; font-variant-numeric: tabular-nums; }
+.day-stat { color: #888; font-variant-numeric: tabular-nums; }
+.day-time { color: #aaa; text-align: right; }
+.day-mastered { color: #8B6914; font-weight: 500; font-size: 11px; text-align: right; }
 .word-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 0.5px solid #F5F0E8; font-size: 12px; }
 .word-stat-row:last-child { border-bottom: none; }
 .word-stat-greek { font-family: "GFS Didot", Georgia, serif; font-size: 14px; color: #1a1a1a; }
@@ -953,6 +961,29 @@ function setCountdownSeconds(n) {
   });
 }
 
+// ── Daily session history (persisted to localStorage) ──
+let dailyHistory = (() => {
+  try { return JSON.parse(localStorage.getItem('dailyHistory') || '{}'); }
+  catch(e) { return {}; }
+})();
+function todayKey() { return new Date().toISOString().slice(0, 10); }
+function recordDailyAttempt(ok, type, masteredDelta) {
+  const k = todayKey();
+  if(!dailyHistory[k]) dailyHistory[k] = {
+    date: k, attempts: 0, correct: 0, masteredAdded: 0,
+    alphaAttempts: 0, wordAttempts: 0,
+    firstAt: Date.now(), lastAt: Date.now()
+  };
+  const d = dailyHistory[k];
+  d.attempts++;
+  if(ok) d.correct++;
+  if(type === 'alpha') d.alphaAttempts++;
+  else if(type === 'word') d.wordAttempts++;
+  d.masteredAdded += (masteredDelta || 0);
+  d.lastAt = Date.now();
+  try { localStorage.setItem('dailyHistory', JSON.stringify(dailyHistory)); } catch(e) {}
+}
+
 function startCountdown(seconds, callback) {
   if(countdownTimer) clearInterval(countdownTimer);
   let remaining = seconds;
@@ -1109,7 +1140,6 @@ function initTrainView() {
         <span style="font-size:11px;color:#888;margin-right:4px;">⏱ 다음까지</span>
         <button class="cd-btn ${countdownSeconds===3?'active':''}" data-n="3" onclick="setCountdownSeconds(3)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===3?'#C9922A':'#fff'};color:${countdownSeconds===3?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">3초</button>
         <button class="cd-btn ${countdownSeconds===5?'active':''}" data-n="5" onclick="setCountdownSeconds(5)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===5?'#C9922A':'#fff'};color:${countdownSeconds===5?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">5초</button>
-        <button class="cd-btn ${countdownSeconds===7?'active':''}" data-n="7" onclick="setCountdownSeconds(7)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===7?'#C9922A':'#fff'};color:${countdownSeconds===7?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">7초</button>
       </div>
     </div>
     <div id="train-content"></div>
@@ -1125,9 +1155,10 @@ function switchTrainTab(tab) {
     const el = document.getElementById('tab-'+t);
     if(el) el.classList.toggle('active', t===tab);
   });
-  if(tab==='alpha') { startAlphaTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); renderHistory(); }
-  else if(tab==='word') { startWordTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); renderHistory(); }
-  else { document.getElementById('train-content').innerHTML=''; renderFullStats(); const h=document.getElementById('train-history'); if(h) h.innerHTML=''; }
+  if(tab==='alpha') { startAlphaTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); }
+  else if(tab==='word') { startWordTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); }
+  else { document.getElementById('train-content').innerHTML=''; renderFullStats(); }
+  renderHistory();
 }
 
 // ── Stage-aware alpha queue ──
@@ -1231,6 +1262,7 @@ function checkAlpha() {
     const oldLevel = st.level;
     st.level = getLevel(st.streak);
     globalStreak++;
+    recordDailyAttempt(true, 'alpha', (st.level >= 3 && oldLevel < 3) ? 1 : 0);
 
     fb.className='train-feedback correct';
     fb.textContent='✓  '+a.n+' · '+a.s;
@@ -1269,6 +1301,7 @@ function checkAlpha() {
 
     fb.className='train-feedback wrong';
     fb.textContent='✗  다시!';
+    recordDailyAttempt(false, 'alpha', 0);
     addHistory({letter:lc, greek:lc, pron:a.n+' · '+a.s, meaning:'', correct:false, type:'alpha'});
 
     // Contextual wrong feedback — show immediately
@@ -1501,12 +1534,14 @@ function checkWholeWord() {
     inp.disabled = true;
     document.querySelector('.train-submit').disabled = true;
     saveIfLoggedIn();
+    recordDailyAttempt(true, 'word', 0);
     addHistory({greek:w.greek, pron:w.pron, meaning:w.meaning, correct:true, type:'word'});
     speakGreek(w.greek);
     startCountdown(countdownSeconds, () => { isProcessing = false; startWordTrainer(); });
   } else {
     fb.className = 'train-feedback wrong';
     fb.textContent = '✗  다시! 전체 발음을 입력해봐';
+    recordDailyAttempt(false, 'word', 0);
     addHistory({greek:w.greek, pron:w.pron, meaning:w.meaning, correct:false, type:'word'});
     ctxArea.innerHTML = `<div class="ctx-feedback trap-feedback"><div class="ctx-title">힌트</div><div class="ctx-body">위 글자들의 소리를 이어서 읽어봐</div></div>`;
     inp.value = '';
@@ -1562,18 +1597,20 @@ function renderFullStats() {
   const alphaStatsHtml = ALPHA.map(a=>{
     const lc = a.g.split(' ')[1]||a.g.split(' ')[0];
     const s = trainStats.letters[lc];
-    let cls='asg-item asg-none', rateStr='-', levelStr='', lvl=0;
+    let cls='asg-item asg-none', rateStr='-', levelStr='', lvl=0, countStr='';
     if(s&&(s.correct+s.wrong)>0){
-      const r=Math.round(s.correct/(s.correct+s.wrong)*100);
+      const total = s.correct + s.wrong;
+      const r=Math.round(s.correct/total*100);
       lvl = getLevel(s.streak||0);
       cls='asg-item '+(lvl>=3?'asg-mastered':lvl>=2?'asg-good':r>=50?'asg-item':'asg-bad');
       rateStr=r+'%';
+      countStr=`${s.correct}/${total}`;
       levelStr=getLevelName(lvl);
       if(lvl>=3) mastered++;
       else if(lvl>=2) learning++;
       else beginner++;
     } else { unseen++; }
-    return `<div class="${cls}"><span class="asg-char">${lc}</span><span class="asg-rate">${rateStr}</span><span class="asg-level" style="color:${getLevelColor(lvl)}">${levelStr}</span></div>`;
+    return `<div class="${cls}"><span class="asg-char">${lc}</span><span class="asg-rate">${rateStr}</span><span class="asg-count">${countStr}</span><span class="asg-level" style="color:${getLevelColor(lvl)}">${levelStr}</span></div>`;
   }).join('');
 
   const learnedWords = Object.entries(trainStats.words);
@@ -1645,6 +1682,27 @@ function renderFullStats() {
         <div class="stats-section-title">자주 틀리는 단어 Top 5</div>
         <div class="weak-list">${weakWords5.map(([g,v])=>`<div class="weak-item">${g}<span class="wi-sub">${v.meaning} · 오답 ${v.wrong}회</span></div>`).join('')}</div>
       </div>`:''}
+
+      ${(()=>{
+        const days = Object.values(dailyHistory).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
+        if(!days.length) return '';
+        const tk = todayKey();
+        const rows = days.map(d=>{
+          const rate = d.attempts ? Math.round(d.correct/d.attempts*100) : 0;
+          const mins = Math.max(1, Math.round((d.lastAt - d.firstAt) / 60000));
+          const isToday = d.date === tk;
+          return `<div class="day-row${isToday?' day-today':''}">
+            <span class="day-date">${d.date}${isToday?' (오늘)':''}</span>
+            <span class="day-stat">${d.correct}/${d.attempts} · ${rate}%</span>
+            <span class="day-stat day-time">${mins}분</span>
+            ${d.masteredAdded?`<span class="day-mastered">+${d.masteredAdded} 습득</span>`:'<span></span>'}
+          </div>`;
+        }).join('');
+        return `<div class="stats-section">
+          <div class="stats-section-title">세션 히스토리 (최근 ${days.length}일)</div>
+          <div class="day-list">${rows}</div>
+        </div>`;
+      })()}
     </div>
   `;
 }
