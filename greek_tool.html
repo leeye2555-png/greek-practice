@@ -750,14 +750,23 @@ ALPHA.forEach((a,i)=>{
   alphaGrid.appendChild(d);
 });
 
-// Click handler for alphabet tile: highlight + play TTS for the letter
+// Greek letter names (spoken form) — for TTS playback of individual letters
+const ALPHA_NAMES = {
+  'α':'άλφα','β':'βήτα','γ':'γάμμα','δ':'δέλτα','ε':'έψιλον','ζ':'ζήτα',
+  'η':'ήτα','θ':'θήτα','ι':'ιώτα','κ':'κάππα','λ':'λάμδα','μ':'μι',
+  'ν':'νι','ξ':'ξι','ο':'όμικρον','π':'πι','ρ':'ρο','σ':'σίγμα',
+  'τ':'ταυ','υ':'ύψιλον','φ':'φι','χ':'χι','ψ':'ψι','ω':'ωμέγα'
+};
+
+// Click handler for alphabet tile: highlight + play TTS for the letter name
 function pickAlpha(i) {
   highlightAlpha(i);
   const a = ALPHA[i];
-  // Extract lowercase Greek char from g (e.g., "Α α" → "α")
   const parts = a.g.split(/\s+/);
-  const lowerChar = parts[1] || parts[0];
-  speakGreek(lowerChar);
+  const lowerChar = (parts[1] || parts[0]).toLowerCase();
+  // Prefer Greek letter name for clear pronunciation
+  const spoken = ALPHA_NAMES[lowerChar] || lowerChar;
+  speakGreek(spoken);
 }
 
 // ── Helpers ──
@@ -932,6 +941,17 @@ let globalStreak = 0;
 let currentStage = 1;
 let countdownTimer = null;
 let sessionHistory = []; // {greek, pron, meaning, correct:bool, type:'alpha'|'word', time}
+let countdownSeconds = parseInt(localStorage.getItem('countdownSeconds') || '5', 10);
+function setCountdownSeconds(n) {
+  countdownSeconds = n;
+  localStorage.setItem('countdownSeconds', String(n));
+  document.querySelectorAll('.cd-btn').forEach(b => {
+    const isActive = parseInt(b.dataset.n, 10) === n;
+    b.classList.toggle('active', isActive);
+    b.style.background = isActive ? '#C9922A' : '#fff';
+    b.style.color = isActive ? '#fff' : '#666';
+  });
+}
 
 function startCountdown(seconds, callback) {
   if(countdownTimer) clearInterval(countdownTimer);
@@ -1079,10 +1099,18 @@ function getUnlockedStage() {
 function initTrainView() {
   const v = document.getElementById('train-view');
   v.innerHTML = `
-    <div class="train-tabs">
-      <button class="train-tab active" id="tab-stats" onclick="switchTrainTab('stats')">통계</button>
-      <button class="train-tab" id="tab-alpha" onclick="switchTrainTab('alpha')">알파벳 훈련</button>
-      <button class="train-tab" id="tab-word" onclick="switchTrainTab('word')">단어 훈련</button>
+    <div class="train-tabs" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;gap:6px;">
+        <button class="train-tab active" id="tab-stats" onclick="switchTrainTab('stats')">통계</button>
+        <button class="train-tab" id="tab-alpha" onclick="switchTrainTab('alpha')">알파벳 훈련</button>
+        <button class="train-tab" id="tab-word" onclick="switchTrainTab('word')">단어 훈련</button>
+      </div>
+      <div class="cd-group" style="display:flex;gap:3px;align-items:center;">
+        <span style="font-size:11px;color:#888;margin-right:4px;">⏱ 다음까지</span>
+        <button class="cd-btn ${countdownSeconds===3?'active':''}" data-n="3" onclick="setCountdownSeconds(3)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===3?'#C9922A':'#fff'};color:${countdownSeconds===3?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">3초</button>
+        <button class="cd-btn ${countdownSeconds===5?'active':''}" data-n="5" onclick="setCountdownSeconds(5)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===5?'#C9922A':'#fff'};color:${countdownSeconds===5?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">5초</button>
+        <button class="cd-btn ${countdownSeconds===7?'active':''}" data-n="7" onclick="setCountdownSeconds(7)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===7?'#C9922A':'#fff'};color:${countdownSeconds===7?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">7초</button>
+      </div>
     </div>
     <div id="train-content"></div>
     <div id="train-stats-panel"></div>
@@ -1233,7 +1261,7 @@ function checkAlpha() {
     saveIfLoggedIn();
     addHistory({letter:lc, greek:lc, pron:a.n+' · '+a.s, meaning:'', correct:true, type:'alpha'});
     speakGreek(lc);
-    startCountdown(5, ()=>{ isProcessing = false; startAlphaTrainer(); });
+    startCountdown(countdownSeconds, ()=>{ isProcessing = false; startAlphaTrainer(); });
   } else {
     st.wrong++; st.streak = 0; st.level = 0;
     alphaWrong++;
@@ -1475,7 +1503,7 @@ function checkWholeWord() {
     saveIfLoggedIn();
     addHistory({greek:w.greek, pron:w.pron, meaning:w.meaning, correct:true, type:'word'});
     speakGreek(w.greek);
-    startCountdown(5, () => { isProcessing = false; startWordTrainer(); });
+    startCountdown(countdownSeconds, () => { isProcessing = false; startWordTrainer(); });
   } else {
     fb.className = 'train-feedback wrong';
     fb.textContent = '✗  다시! 전체 발음을 입력해봐';
