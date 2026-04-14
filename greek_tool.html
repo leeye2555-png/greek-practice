@@ -212,15 +212,7 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F5F0E8; c
 .asg-item.asg-mastered { border-color: #8B6914; background: #F5EDD5; box-shadow: inset 0 0 0 1px #C9922A; }
 .asg-char { font-size: 14px; font-family: "GFS Didot", Georgia, serif; display: block; color: #1a1a1a; }
 .asg-rate { font-size: 9px; color: #888; display: block; margin-top: 1px; }
-.asg-count { font-size: 9px; color: #aaa; display: block; margin-top: 1px; }
 .asg-level { font-size: 8px; display: block; margin-top: 1px; }
-.day-list { display: flex; flex-direction: column; gap: 4px; }
-.day-row { display: grid; grid-template-columns: 110px 1fr 60px 90px; gap: 8px; align-items: center; padding: 6px 10px; border: 0.5px solid #E8DFC8; border-radius: 6px; background: #fafaf8; font-size: 12px; }
-.day-row.day-today { border-color: #C9922A; background: #FDF3DC; font-weight: 500; }
-.day-date { color: #555; font-variant-numeric: tabular-nums; }
-.day-stat { color: #888; font-variant-numeric: tabular-nums; }
-.day-time { color: #aaa; text-align: right; }
-.day-mastered { color: #8B6914; font-weight: 500; font-size: 11px; text-align: right; }
 .word-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 0.5px solid #F5F0E8; font-size: 12px; }
 .word-stat-row:last-child { border-bottom: none; }
 .word-stat-greek { font-family: "GFS Didot", Georgia, serif; font-size: 14px; color: #1a1a1a; }
@@ -269,85 +261,8 @@ body { font-family: system-ui, -apple-system, sans-serif; background: #F5F0E8; c
 .hist-speak { cursor: pointer; font-size: 14px; opacity: 0.5; transition: opacity 0.15s; }
 .hist-speak:hover { opacity: 1; }
 
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   .alpha-panel { width: 48%; }
-}
-
-/* ── Mobile (≤ 640px) ── */
-@media (max-width: 640px) {
-  html, body { height: auto; min-height: 100vh; overflow-y: auto; overflow-x: hidden; }
-
-  /* Header compact */
-  .header { padding: 0.5rem 0.75rem; gap: 0.5rem; flex-wrap: wrap; }
-  .header h1 { font-size: 14px; }
-  .header > div:last-child { margin-left: auto; font-size: 12px !important; }
-  #auth-btn { font-size: 11px !important; padding: 4px 10px !important; }
-  #auth-info span { font-size: 11px !important; }
-
-  /* Searchbar compact */
-  .searchbar { padding: 0.5rem 0.75rem; gap: 5px; }
-  .searchbar input { min-width: 100%; font-size: 14px; padding: 6px 10px; }
-  .fb { font-size: 10px; padding: 3px 9px; }
-
-  /* Stack panels vertically */
-  .main { flex-direction: column; overflow: visible; height: auto; }
-  .word-panel { flex: none; border-right: none; border-bottom: 0.5px solid #E8DFC8; overflow: visible; }
-  .alpha-panel { width: 100%; border-left: none; flex: none; overflow: visible; }
-
-  /* Alpha grid: 3 cols, smaller tiles */
-  .alpha-grid { grid-template-columns: repeat(3, 1fr); padding: 0.6rem; gap: 6px; overflow-y: visible; }
-  .apc { padding: 12px 4px; }
-  .apc .ag { font-size: 22px; }
-  .apc .an { font-size: 10px; }
-  .apc .as { font-size: 12px; }
-  .alpha-header { padding: 0.5rem 0.75rem; font-size: 12px; }
-
-  /* Big word card smaller */
-  .big-word { padding: 1rem 1.1rem; }
-  .big-greek { font-size: 32px; }
-  .big-meaning { font-size: 17px; }
-  .big-pron { font-size: 14px; }
-
-  /* Letter strip cards: smaller */
-  .lbox { min-width: 42px; padding: 8px 9px; }
-  .lchar { font-size: 20px; }
-  .lsound { font-size: 11px; }
-
-  /* List view: tighter columns */
-  .list-view { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); padding: 0.6rem; gap: 6px; }
-  .lcard-greek { font-size: 16px; }
-  .lcard-pron { font-size: 12px; }
-  .lcard-meaning { font-size: 12px; }
-
-  /* Study/train view padding */
-  .study-view, .train-view { padding: 0.75rem; gap: 0.6rem; }
-
-  /* Active box smaller */
-  .active-box-left.revealed { max-height: 130px; padding: 1rem; }
-  .active-box-left .alpha-active-greek { font-size: 36px; }
-
-  /* Replace absolute slider with display-toggle on mobile */
-  .view-slider { overflow: visible; height: auto; position: relative; }
-  .study-view, .list-view, .train-view {
-    position: static;
-    transform: none !important;
-    transition: none !important;
-  }
-  .study-view { display: flex; }
-  .list-view { display: none; }
-  .train-view { display: none; }
-  .view-slider.show-list .study-view { display: none; }
-  .view-slider.show-list .list-view  { display: grid; }
-  .view-slider.show-list .train-view { display: none; }
-  .view-slider.show-train .study-view { display: none; }
-  .view-slider.show-train .list-view  { display: none; }
-  .view-slider.show-train .train-view { display: flex; }
-
-  /* Train-mode tabs wrap */
-  .tab-btn { font-size: 12px !important; padding: 6px 10px !important; }
-
-  /* History panel tighter */
-  .hist-row { padding: 6px 8px; font-size: 13px; }
 }
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -752,30 +667,9 @@ ALPHA.forEach((a,i)=>{
   const d = document.createElement('div');
   d.className = 'apc ' + a.cls;
   d.id = 'apc-' + i;
-  d.style.cursor = 'pointer';
   d.innerHTML = '<span class="ag">'+a.g+'</span><span class="an">'+a.n+'</span><span class="as">'+fmtSound(a.s)+'</span>';
-  d.onclick = () => pickAlpha(i);
   alphaGrid.appendChild(d);
 });
-
-// Greek letter names (spoken form) — for TTS playback of individual letters
-const ALPHA_NAMES = {
-  'α':'άλφα','β':'βήτα','γ':'γάμμα','δ':'δέλτα','ε':'έψιλον','ζ':'ζήτα',
-  'η':'ήτα','θ':'θήτα','ι':'ιώτα','κ':'κάππα','λ':'λάμδα','μ':'μι',
-  'ν':'νι','ξ':'ξι','ο':'όμικρον','π':'πι','ρ':'ρο','σ':'σίγμα',
-  'τ':'ταυ','υ':'ύψιλον','φ':'φι','χ':'χι','ψ':'ψι','ω':'ωμέγα'
-};
-
-// Click handler for alphabet tile: highlight + play TTS for the letter name
-function pickAlpha(i) {
-  highlightAlpha(i);
-  const a = ALPHA[i];
-  const parts = a.g.split(/\s+/);
-  const lowerChar = (parts[1] || parts[0]).toLowerCase();
-  // Prefer Greek letter name for clear pronunciation
-  const spoken = ALPHA_NAMES[lowerChar] || lowerChar;
-  speakGreek(spoken);
-}
 
 // ── Helpers ──
 function tok(s){ return (s||'').replace(/[\s\/·\-()']/g,'').toLowerCase(); }
@@ -949,40 +843,6 @@ let globalStreak = 0;
 let currentStage = 1;
 let countdownTimer = null;
 let sessionHistory = []; // {greek, pron, meaning, correct:bool, type:'alpha'|'word', time}
-let countdownSeconds = parseInt(localStorage.getItem('countdownSeconds') || '5', 10);
-function setCountdownSeconds(n) {
-  countdownSeconds = n;
-  localStorage.setItem('countdownSeconds', String(n));
-  document.querySelectorAll('.cd-btn').forEach(b => {
-    const isActive = parseInt(b.dataset.n, 10) === n;
-    b.classList.toggle('active', isActive);
-    b.style.background = isActive ? '#C9922A' : '#fff';
-    b.style.color = isActive ? '#fff' : '#666';
-  });
-}
-
-// ── Daily session history (persisted to localStorage) ──
-let dailyHistory = (() => {
-  try { return JSON.parse(localStorage.getItem('dailyHistory') || '{}'); }
-  catch(e) { return {}; }
-})();
-function todayKey() { return new Date().toISOString().slice(0, 10); }
-function recordDailyAttempt(ok, type, masteredDelta) {
-  const k = todayKey();
-  if(!dailyHistory[k]) dailyHistory[k] = {
-    date: k, attempts: 0, correct: 0, masteredAdded: 0,
-    alphaAttempts: 0, wordAttempts: 0,
-    firstAt: Date.now(), lastAt: Date.now()
-  };
-  const d = dailyHistory[k];
-  d.attempts++;
-  if(ok) d.correct++;
-  if(type === 'alpha') d.alphaAttempts++;
-  else if(type === 'word') d.wordAttempts++;
-  d.masteredAdded += (masteredDelta || 0);
-  d.lastAt = Date.now();
-  try { localStorage.setItem('dailyHistory', JSON.stringify(dailyHistory)); } catch(e) {}
-}
 
 function startCountdown(seconds, callback) {
   if(countdownTimer) clearInterval(countdownTimer);
@@ -1002,67 +862,21 @@ function startCountdown(seconds, callback) {
   }, 1000);
 }
 
-// ── TTS (Google Cloud TTS Chirp3-HD → Web Speech fallback) ──
-// WARNING: API key is exposed on client. For production, proxy via Firebase Functions.
-// This key is restricted to Cloud Text-to-Speech API only (see Google Cloud Console).
-const TTS_API_KEY = 'AIzaSyBMMm5KcHlKX8YCF6pnuJTclutUrZ1OgMI';
-const TTS_VOICE = 'el-GR-Chirp3-HD-Zubenelgenubi';
-const TTS_LANG = 'el-GR';
-const ttsCache = new Map();
-let currentTtsAudio = null;
-
-async function speakGreek(text) {
-  if(!text) return;
-  if(currentTtsAudio) { try { currentTtsAudio.pause(); } catch(e){} currentTtsAudio = null; }
-
-  // Cached? play instantly
-  if(ttsCache.has(text)) {
-    const a = new Audio(ttsCache.get(text));
-    currentTtsAudio = a; a.play().catch(()=>{});
-    return;
-  }
-
-  try {
-    const res = await fetch(
-      `https://texttospeech.googleapis.com/v1/text:synthesize?key=${TTS_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          input: { text: text },
-          voice: { languageCode: TTS_LANG, name: TTS_VOICE },
-          audioConfig: { audioEncoding: 'MP3', speakingRate: 1.15 }
-        })
-      }
-    );
-    if(!res.ok) { console.warn('Cloud TTS error', res.status, await res.text()); return fallbackSpeak(text); }
-    const data = await res.json();
-    if(!data.audioContent) { console.warn('Cloud TTS: no audioContent'); return fallbackSpeak(text); }
-    const bin = atob(data.audioContent);
-    const bytes = new Uint8Array(bin.length);
-    for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
-    const url = URL.createObjectURL(new Blob([bytes], { type: 'audio/mpeg' }));
-    ttsCache.set(text, url);
-    const a = new Audio(url);
-    currentTtsAudio = a; a.play().catch(()=>{});
-  } catch(err) {
-    console.warn('Cloud TTS fetch failed', err);
-    fallbackSpeak(text);
-  }
-}
-
-function fallbackSpeak(text) {
+// ── TTS (Web Speech API) ──
+function speakGreek(text) {
   if(!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'el-GR'; u.rate = 0.8;
+  u.lang = 'el-GR';
+  u.rate = 0.8;
+  // Try to find Greek voice
   const voices = window.speechSynthesis.getVoices();
   const greek = voices.find(v => v.lang && v.lang.startsWith('el'));
   if(greek) u.voice = greek;
   window.speechSynthesis.speak(u);
 }
 
-// Preload Web Speech voices for fallback
+// Preload voices
 if(window.speechSynthesis) {
   window.speechSynthesis.getVoices();
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -1130,17 +944,10 @@ function getUnlockedStage() {
 function initTrainView() {
   const v = document.getElementById('train-view');
   v.innerHTML = `
-    <div class="train-tabs" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
-      <div style="display:flex;gap:6px;">
-        <button class="train-tab active" id="tab-stats" onclick="switchTrainTab('stats')">통계</button>
-        <button class="train-tab" id="tab-alpha" onclick="switchTrainTab('alpha')">알파벳 훈련</button>
-        <button class="train-tab" id="tab-word" onclick="switchTrainTab('word')">단어 훈련</button>
-      </div>
-      <div class="cd-group" style="display:flex;gap:3px;align-items:center;">
-        <span style="font-size:11px;color:#888;margin-right:4px;">⏱ 다음까지</span>
-        <button class="cd-btn ${countdownSeconds===3?'active':''}" data-n="3" onclick="setCountdownSeconds(3)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===3?'#C9922A':'#fff'};color:${countdownSeconds===3?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">3초</button>
-        <button class="cd-btn ${countdownSeconds===5?'active':''}" data-n="5" onclick="setCountdownSeconds(5)" style="border:0.5px solid #E8DFC8;background:${countdownSeconds===5?'#C9922A':'#fff'};color:${countdownSeconds===5?'#fff':'#666'};border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">5초</button>
-      </div>
+    <div class="train-tabs">
+      <button class="train-tab active" id="tab-stats" onclick="switchTrainTab('stats')">통계</button>
+      <button class="train-tab" id="tab-alpha" onclick="switchTrainTab('alpha')">알파벳 훈련</button>
+      <button class="train-tab" id="tab-word" onclick="switchTrainTab('word')">단어 훈련</button>
     </div>
     <div id="train-content"></div>
     <div id="train-stats-panel"></div>
@@ -1155,10 +962,9 @@ function switchTrainTab(tab) {
     const el = document.getElementById('tab-'+t);
     if(el) el.classList.toggle('active', t===tab);
   });
-  if(tab==='alpha') { startAlphaTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); }
-  else if(tab==='word') { startWordTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); }
-  else { document.getElementById('train-content').innerHTML=''; renderFullStats(); }
-  renderHistory();
+  if(tab==='alpha') { startAlphaTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); renderHistory(); }
+  else if(tab==='word') { startWordTrainer(); document.getElementById('train-stats-panel').innerHTML=''; renderMiniStats(); renderHistory(); }
+  else { document.getElementById('train-content').innerHTML=''; renderFullStats(); const h=document.getElementById('train-history'); if(h) h.innerHTML=''; }
 }
 
 // ── Stage-aware alpha queue ──
@@ -1262,7 +1068,6 @@ function checkAlpha() {
     const oldLevel = st.level;
     st.level = getLevel(st.streak);
     globalStreak++;
-    recordDailyAttempt(true, 'alpha', (st.level >= 3 && oldLevel < 3) ? 1 : 0);
 
     fb.className='train-feedback correct';
     fb.textContent='✓  '+a.n+' · '+a.s;
@@ -1293,7 +1098,7 @@ function checkAlpha() {
     saveIfLoggedIn();
     addHistory({letter:lc, greek:lc, pron:a.n+' · '+a.s, meaning:'', correct:true, type:'alpha'});
     speakGreek(lc);
-    startCountdown(countdownSeconds, ()=>{ isProcessing = false; startAlphaTrainer(); });
+    startCountdown(5, ()=>{ isProcessing = false; startAlphaTrainer(); });
   } else {
     st.wrong++; st.streak = 0; st.level = 0;
     alphaWrong++;
@@ -1301,7 +1106,6 @@ function checkAlpha() {
 
     fb.className='train-feedback wrong';
     fb.textContent='✗  다시!';
-    recordDailyAttempt(false, 'alpha', 0);
     addHistory({letter:lc, greek:lc, pron:a.n+' · '+a.s, meaning:'', correct:false, type:'alpha'});
 
     // Contextual wrong feedback — show immediately
@@ -1534,14 +1338,12 @@ function checkWholeWord() {
     inp.disabled = true;
     document.querySelector('.train-submit').disabled = true;
     saveIfLoggedIn();
-    recordDailyAttempt(true, 'word', 0);
     addHistory({greek:w.greek, pron:w.pron, meaning:w.meaning, correct:true, type:'word'});
     speakGreek(w.greek);
-    startCountdown(countdownSeconds, () => { isProcessing = false; startWordTrainer(); });
+    startCountdown(5, () => { isProcessing = false; startWordTrainer(); });
   } else {
     fb.className = 'train-feedback wrong';
     fb.textContent = '✗  다시! 전체 발음을 입력해봐';
-    recordDailyAttempt(false, 'word', 0);
     addHistory({greek:w.greek, pron:w.pron, meaning:w.meaning, correct:false, type:'word'});
     ctxArea.innerHTML = `<div class="ctx-feedback trap-feedback"><div class="ctx-title">힌트</div><div class="ctx-body">위 글자들의 소리를 이어서 읽어봐</div></div>`;
     inp.value = '';
@@ -1597,20 +1399,18 @@ function renderFullStats() {
   const alphaStatsHtml = ALPHA.map(a=>{
     const lc = a.g.split(' ')[1]||a.g.split(' ')[0];
     const s = trainStats.letters[lc];
-    let cls='asg-item asg-none', rateStr='-', levelStr='', lvl=0, countStr='';
+    let cls='asg-item asg-none', rateStr='-', levelStr='', lvl=0;
     if(s&&(s.correct+s.wrong)>0){
-      const total = s.correct + s.wrong;
-      const r=Math.round(s.correct/total*100);
+      const r=Math.round(s.correct/(s.correct+s.wrong)*100);
       lvl = getLevel(s.streak||0);
       cls='asg-item '+(lvl>=3?'asg-mastered':lvl>=2?'asg-good':r>=50?'asg-item':'asg-bad');
       rateStr=r+'%';
-      countStr=`${s.correct}/${total}`;
       levelStr=getLevelName(lvl);
       if(lvl>=3) mastered++;
       else if(lvl>=2) learning++;
       else beginner++;
     } else { unseen++; }
-    return `<div class="${cls}"><span class="asg-char">${lc}</span><span class="asg-rate">${rateStr}</span><span class="asg-count">${countStr}</span><span class="asg-level" style="color:${getLevelColor(lvl)}">${levelStr}</span></div>`;
+    return `<div class="${cls}"><span class="asg-char">${lc}</span><span class="asg-rate">${rateStr}</span><span class="asg-level" style="color:${getLevelColor(lvl)}">${levelStr}</span></div>`;
   }).join('');
 
   const learnedWords = Object.entries(trainStats.words);
@@ -1682,27 +1482,6 @@ function renderFullStats() {
         <div class="stats-section-title">자주 틀리는 단어 Top 5</div>
         <div class="weak-list">${weakWords5.map(([g,v])=>`<div class="weak-item">${g}<span class="wi-sub">${v.meaning} · 오답 ${v.wrong}회</span></div>`).join('')}</div>
       </div>`:''}
-
-      ${(()=>{
-        const days = Object.values(dailyHistory).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
-        if(!days.length) return '';
-        const tk = todayKey();
-        const rows = days.map(d=>{
-          const rate = d.attempts ? Math.round(d.correct/d.attempts*100) : 0;
-          const mins = Math.max(1, Math.round((d.lastAt - d.firstAt) / 60000));
-          const isToday = d.date === tk;
-          return `<div class="day-row${isToday?' day-today':''}">
-            <span class="day-date">${d.date}${isToday?' (오늘)':''}</span>
-            <span class="day-stat">${d.correct}/${d.attempts} · ${rate}%</span>
-            <span class="day-stat day-time">${mins}분</span>
-            ${d.masteredAdded?`<span class="day-mastered">+${d.masteredAdded} 습득</span>`:'<span></span>'}
-          </div>`;
-        }).join('');
-        return `<div class="stats-section">
-          <div class="stats-section-title">세션 히스토리 (최근 ${days.length}일)</div>
-          <div class="day-list">${rows}</div>
-        </div>`;
-      })()}
     </div>
   `;
 }
