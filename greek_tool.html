@@ -744,9 +744,21 @@ ALPHA.forEach((a,i)=>{
   const d = document.createElement('div');
   d.className = 'apc ' + a.cls;
   d.id = 'apc-' + i;
+  d.style.cursor = 'pointer';
   d.innerHTML = '<span class="ag">'+a.g+'</span><span class="an">'+a.n+'</span><span class="as">'+fmtSound(a.s)+'</span>';
+  d.onclick = () => pickAlpha(i);
   alphaGrid.appendChild(d);
 });
+
+// Click handler for alphabet tile: highlight + play TTS for the letter
+function pickAlpha(i) {
+  highlightAlpha(i);
+  const a = ALPHA[i];
+  // Extract lowercase Greek char from g (e.g., "Α α" → "α")
+  const parts = a.g.split(/\s+/);
+  const lowerChar = parts[1] || parts[0];
+  speakGreek(lowerChar);
+}
 
 // ── Helpers ──
 function tok(s){ return (s||'').replace(/[\s\/·\-()']/g,'').toLowerCase(); }
